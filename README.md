@@ -1,11 +1,81 @@
+# 🌐 LinguaSense
 
-  # Responsive Design System for LinguaSense
+**LinguaSense** is a cross-platform **desktop application for learning English with the help of local AI models**, built using **Electron, React, and Vite**.
 
-  This is a code bundle for Responsive Design System for LinguaSense. The original project is available at https://www.figma.com/design/YbeFudNOgJtPes951JXlOB/Responsive-Design-System-for-LinguaSense.
+The application integrates **local Large Language Models (LLMs)** such as **Ollama** and **LM Studio**, allowing users to practice English **offline**, securely, and without sending data to cloud-based AI services.
 
-  ## Running the code
+---
 
-  Run `npm i` to install the dependencies.
+## 🎯 Project Goals
 
-  Run `npm run dev` to start the development server.
-  
+- Provide an **offline-first English learning experience**
+- Use **local AI models** for privacy and low latency
+- Offer structured English practice: **Speaking, Reading, Writing**
+- Serve as a **production-ready portfolio project** showcasing Electron + AI integration
+
+---
+
+## ✨ Core Features
+
+### 🗣 Speaking Practice
+- Text-based speaking simulation
+- AI feedback on grammar and sentence structure
+- Natural English rephrasing
+- Suggestions for more native-like expressions
+
+### 📖 Reading Practice
+- Reading passages with adjustable difficulty
+- Vocabulary explanations powered by AI
+- Contextual Q&A about the text
+- Comprehension assistance
+
+### ✍️ Writing Practice
+- Grammar and spelling correction
+- Sentence refinement
+- Tone adjustment (formal / casual)
+- Explanation of mistakes for learning purposes
+
+### ⚙️ AI Configuration
+- Choose AI engine:
+  - Ollama
+  - LM Studio (OpenAI-compatible local API)
+- Select local model
+- Adjust temperature & response length
+- No API keys required
+
+---
+
+## 🛠 Technology Stack
+
+- **Electron** – Desktop application framework
+- **React 18** – Frontend UI
+- **Vite** – Fast development & build tool
+- **TypeScript** – Type safety
+- **Tailwind CSS** – Styling
+- **React Router** – Page routing
+- **Ollama / LM Studio** – Local AI inference
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js **18+**
+- pnpm or npm
+- Ollama or LM Studio installed locally
+
+---
+
+### Development Mode
+
+Using **pnpm**:
+```bash
+pnpm install
+or
+npm install
+```
+LinguaSense uses Electron IPC to safely communicate between the UI and local AI engines.
+
+
+
+
