@@ -9,32 +9,32 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { motion } from 'motion/react';
+import { useSettings } from '../state/SettingsContext';
 
 export default function Speaking() {
+  const { speakingLanguage, setSpeakingLanguage } = useSettings();
   const [isRecording, setIsRecording] = useState(false);
-  const [language, setLanguage] = useState('english');
   const [messages, setMessages] = useState([
     {
       role: 'ai',
-      content: 'Hello! Click the microphone button to start practicing.',
+      content: 'Hello! 👋\nClick the microphone button to start speaking practice.\nChoose a language and speak naturally — I will help you improve step by step.',
     },
   ]);
 
   const toggleRecording = () => {
     setIsRecording(!isRecording);
     if (!isRecording) {
-      // Simulate adding a new message
+      // Simulate adding a new message (this will be replaced with real speech-to-text)
       setTimeout(() => {
         setMessages((prev) => [
           ...prev,
           {
             role: 'user',
-            content: 'Hello, how are you?',
+            content: 'Hello, how you doing?',
           },
           {
             role: 'ai',
-            content:
-              "Great pronunciation! Your intonation was natural. Let's practice more complex sentences.",
+            content: '✅ Great job speaking up!\n\n✏️ Correction:\n"Hello, how are you doing?"\n\n💡 Tip: Use "are" in questions about states or conditions.\n\n🎯 Now try: "How are you today?"',
           },
         ]);
         setIsRecording(false);
@@ -52,26 +52,36 @@ export default function Speaking() {
           <Card className="p-6 flex flex-col items-center justify-center min-h-[300px] lg:min-h-[400px]">
             <div className="mb-6 w-full">
               <label className="block text-sm mb-2">Select Language</label>
-              <Select value={language} onValueChange={setLanguage}>
+              <Select value={speakingLanguage} onValueChange={setSpeakingLanguage}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="english">English</SelectItem>
+                  <SelectItem value="japanese">Japanese</SelectItem>
+                  <SelectItem value="mandarin">Chinese (Mandarin)</SelectItem>
+                  <SelectItem value="english-uk">English (British)</SelectItem>
+                  <SelectItem value="english-us">English (US)</SelectItem>
+                  <SelectItem value="indonesian">Indonesian</SelectItem>
+                  <SelectItem value="german">German</SelectItem>
+                  <SelectItem value="italian">Italian</SelectItem>
+                  <SelectItem value="korean">Korean</SelectItem>
+                  <SelectItem value="arabic">Arabic</SelectItem>
                   <SelectItem value="spanish">Spanish</SelectItem>
                   <SelectItem value="french">French</SelectItem>
-                  <SelectItem value="german">German</SelectItem>
+                  <SelectItem value="portuguese">Portuguese</SelectItem>
+                  <SelectItem value="dutch">Dutch</SelectItem>
+                  <SelectItem value="russian">Russian</SelectItem>
+                  <SelectItem value="hindi">Hindi</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <motion.button
               onClick={toggleRecording}
-              className={`w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center transition-all ${
-                isRecording
-                  ? 'bg-destructive text-destructive-foreground'
-                  : 'bg-accent text-accent-foreground hover:scale-105'
-              }`}
+              className={`w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center transition-all ${isRecording
+                ? 'bg-destructive text-destructive-foreground'
+                : 'bg-accent text-accent-foreground hover:scale-105'
+                }`}
               animate={isRecording ? { scale: [1, 1.1, 1] } : {}}
               transition={{ repeat: isRecording ? Infinity : 0, duration: 1.5 }}
             >
@@ -94,11 +104,10 @@ export default function Speaking() {
               {messages.map((message, index) => (
                 <div
                   key={index}
-                  className={`p-3 rounded-lg ${
-                    message.role === 'ai'
-                      ? 'bg-accent/10 text-foreground'
-                      : 'bg-secondary text-foreground ml-auto max-w-[80%]'
-                  }`}
+                  className={`p-3 rounded-lg ${message.role === 'ai'
+                    ? 'bg-accent/10 text-foreground'
+                    : 'bg-secondary text-foreground ml-auto max-w-[80%]'
+                    }`}
                 >
                   <p className="text-sm">{message.content}</p>
                 </div>

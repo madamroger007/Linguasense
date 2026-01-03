@@ -52,28 +52,35 @@ export default function Home() {
             </Link>
           ))}
         </div>
-
         <Card className="mt-8 p-6">
-          <h2 className="text-2xl mb-4">Recent Progress</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+          <h2 className="text-2xl mb-4">Keyboard Shortcuts</h2>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
               <div>
-                <p className="font-medium">Speaking Practice</p>
+                <p className="font-medium">Start Talk With AI</p>
                 <p className="text-sm text-muted-foreground">
-                  15 minutes today
+                  Activate AI-powered speaking with one shortcut
                 </p>
               </div>
-              <div className="text-2xl font-semibold text-accent">75%</div>
+              <kbd className="px-3 py-1 bg-primary text-primary-foreground rounded font-mono text-sm">
+                Ctrl + Shift + S
+              </kbd>
             </div>
-            <div className="w-full bg-secondary rounded-full h-2">
-              <div
-                className="bg-accent h-2 rounded-full"
-                style={{ width: '75%' }}
-              ></div>
+            <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
+              <div>
+                <p className="font-medium">Translate Anywhere</p>
+                <p className="text-sm text-muted-foreground">
+                  Translate selected text on any page instantly
+                </p>
+              </div>
+              <kbd className="px-3 py-1 bg-primary text-primary-foreground rounded font-mono text-sm">
+                Ctrl + Shift + T
+              </kbd>
             </div>
           </div>
         </Card>
       </div>
+
     </div>
   );
 }

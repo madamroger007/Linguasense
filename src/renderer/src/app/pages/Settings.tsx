@@ -2,9 +2,27 @@ import { Card } from '../components/ui/card';
 import { Switch } from '../components/ui/switch';
 import { Slider } from '../components/ui/slider';
 import { useTheme } from 'next-themes';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import { useSettings } from '../state/SettingsContext';
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
+  const {
+    fontSize,
+    setFontSize,
+    dailyReminders,
+    setDailyReminders,
+    autoRun,
+    setAutoRun,
+    aiModel,
+    setAiModel,
+  } = useSettings();
 
   return (
     <div className="p-4 md:p-6 lg:p-8 pb-20 md:pb-6">
@@ -34,9 +52,15 @@ export default function Settings() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="font-medium">Font Size</p>
-                  <span className="text-sm text-muted-foreground">16px</span>
+                  <span className="text-sm text-muted-foreground">{fontSize}px</span>
                 </div>
-                <Slider defaultValue={[16]} min={12} max={24} step={1} />
+                <Slider
+                  value={[fontSize]}
+                  onValueChange={(value) => setFontSize(value[0])}
+                  min={12}
+                  max={24}
+                  step={1}
+                />
               </div>
 
               <div className="p-4 bg-secondary rounded-lg">
@@ -59,46 +83,53 @@ export default function Settings() {
                     Get notified to practice
                   </p>
                 </div>
-                <Switch defaultChecked />
+                <Switch
+                  checked={dailyReminders}
+                  onCheckedChange={setDailyReminders}
+                />
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">Auto-play Audio</p>
+                  <p className="font-medium">Auto Run App</p>
                   <p className="text-sm text-muted-foreground">
-                    Automatically play pronunciation
+                    Start learning session on app launch
                   </p>
                 </div>
-                <Switch defaultChecked />
+                <Switch
+                  checked={autoRun}
+                  onCheckedChange={setAutoRun}
+                />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Show Translations</p>
-                  <p className="text-sm text-muted-foreground">
-                    Display word translations
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
+
             </div>
           </Card>
 
-          {/* Account */}
+          {/* AI Model Selection */}
           <Card className="p-6">
-            <h3 className="text-xl mb-4">Account</h3>
+            <h3 className="text-xl mb-4">AI Model</h3>
             <div className="space-y-4">
               <div>
-                <p className="font-medium">Email</p>
-                <p className="text-sm text-muted-foreground">user@example.com</p>
-              </div>
-              <div>
-                <p className="font-medium">Learning Streak</p>
-                <p className="text-sm text-muted-foreground">7 days</p>
-              </div>
-              <div>
-                <p className="font-medium">Total Practice Time</p>
-                <p className="text-sm text-muted-foreground">12 hours 45 minutes</p>
+                <label className="block text-sm font-medium mb-2">
+                  Select AI Model
+                </label>
+                <Select value={aiModel} onValueChange={setAiModel}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select AI model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lmstudio">LM Studio</SelectItem>
+                    <SelectItem value="ollama">Ollama</SelectItem>
+                    <SelectItem value="chatgpt">ChatGPT</SelectItem>
+                    <SelectItem value="claude">Claude</SelectItem>
+                    <SelectItem value="ollama-cloud">Ollama Cloud</SelectItem>
+                    <SelectItem value="deepseek">DeepSeek</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Choose your preferred AI assistant for language tutoring
+                </p>
               </div>
             </div>
           </Card>

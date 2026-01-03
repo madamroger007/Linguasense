@@ -1,5 +1,7 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from 'next-themes';
+import { useEffect } from 'react';
+import { SettingsProvider } from './state/SettingsContext';
 import {
   DesktopSidebar,
   TabletHeader,
@@ -13,16 +15,23 @@ import Writing from './pages/Writing';
 import Settings from './pages/Settings';
 
 function Layout({ children }: { children: React.ReactNode }) {
+  // Initialize global font size from localStorage
+  useEffect(() => {
+    const savedFontSize = localStorage.getItem('fontSize');
+    const fontSize = savedFontSize ? parseInt(savedFontSize) : 16;
+    document.documentElement.style.setProperty('--app-font-size', `${fontSize}px`);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <DesktopSidebar />
-      <TabletHeader onToggleTheme={() => {}} />
+      <TabletHeader />
       <TabletNavigation />
-      
+
       <main className="lg:ml-64">
         {children}
       </main>
-      
+
       <MobileBottomNav />
     </div>
   );
@@ -31,17 +40,19 @@ function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <HashRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/speaking" element={<Speaking />} />
-            <Route path="/reading" element={<Reading />} />
-            <Route path="/writing" element={<Writing />} />
-            <Route path="/settings" element={<Settings />} />
-          </Routes>
-        </Layout>
-      </HashRouter>
+      <SettingsProvider>
+        <HashRouter>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/speaking" element={<Speaking />} />
+              <Route path="/reading" element={<Reading />} />
+              <Route path="/writing" element={<Writing />} />
+              <Route path="/settings" element={<Settings />} />
+            </Routes>
+          </Layout>
+        </HashRouter>
+      </SettingsProvider>
     </ThemeProvider>
   );
 }

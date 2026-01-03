@@ -39,16 +39,11 @@ export function DesktopSidebar() {
   );
 }
 
-export function TabletHeader({ onToggleTheme }: { onToggleTheme: () => void }) {
+export function TabletHeader() {
   return (
     <header className="hidden md:flex lg:hidden items-center justify-between h-16 px-6 bg-card border-b border-border">
       <h1 className="text-xl font-semibold text-accent">LinguaSense</h1>
-      <button
-        onClick={onToggleTheme}
-        className="p-2 rounded-lg hover:bg-accent/10"
-      >
-        <Settings className="w-5 h-5" />
-      </button>
+
     </header>
   );
 }
