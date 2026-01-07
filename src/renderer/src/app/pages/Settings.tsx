@@ -101,8 +101,6 @@ export default function Settings() {
                   onCheckedChange={setAutoRun}
                 />
               </div>
-
-
             </div>
           </Card>
 
