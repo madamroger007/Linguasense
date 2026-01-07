@@ -24,6 +24,9 @@ dist-ssr
 *.sw?
 .eslintcache
 
+.env
+.env.*.local
+
 dist
 out
 
