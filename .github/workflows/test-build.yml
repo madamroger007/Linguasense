@@ -1,0 +1,145 @@
+name: Test Electron Build
+
+on:
+  push:
+    branches: ['main', 'dev']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test-build:
+    name: Test Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    env:
+      CI: true
+      ELECTRON_DISABLE_SANDBOX: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.20.4
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # ─────────────────────────────
+      # Linting
+      # ─────────────────────────────
+      - name: Run ESLint
+        run: pnpm run lint
+        continue-on-error: true
+
+      # ─────────────────────────────
+      # Type Check
+      # ─────────────────────────────
+      - name: TypeScript Check
+        run: pnpm run typecheck
+
+      # ─────────────────────────────
+      # Build Test (Vite only - no packaging)
+      # ─────────────────────────────
+      - name: Build Electron App
+        run: pnpm exec electron-vite build
+
+      # ─────────────────────────────
+      # Verify Build Output
+      # ─────────────────────────────
+      - name: Verify build output exists (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          echo "Checking build output..."
+          if [ -d "out" ]; then
+            echo "✅ Build output directory exists"
+            ls -la out/
+            if [ -d "out/main" ] && [ -d "out/preload" ] && [ -d "out/renderer" ]; then
+              echo "✅ All expected directories found"
+            else
+              echo "❌ Missing expected directories"
+              exit 1
+            fi
+          else
+            echo "❌ Build output directory not found"
+            exit 1
+          fi
+
+      - name: Verify build output exists (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "Checking build output..."
+          if (Test-Path "out") {
+            Write-Host "✅ Build output directory exists"
+            Get-ChildItem -Path "out" -Recurse -Depth 1
+            $mainExists = Test-Path "out/main"
+            $preloadExists = Test-Path "out/preload"
+            $rendererExists = Test-Path "out/renderer"
+            if ($mainExists -and $preloadExists -and $rendererExists) {
+              Write-Host "✅ All expected directories found"
+            } else {
+              Write-Host "❌ Missing expected directories"
+              exit 1
+            }
+          } else {
+            Write-Host "❌ Build output directory not found"
+            exit 1
+          }
+
+      # ─────────────────────────────
+      # Test Packaging (--dir only, faster)
+      # ─────────────────────────────
+      - name: Test Package (unpacked)
+        run: pnpm exec electron-builder --dir
+        env:
+          ELECTRON_SKIP_INSTALL: 1
+
+      - name: Verify package output (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          echo "Checking package output..."
+          if [ -d "dist" ]; then
+            echo "✅ Package output directory exists"
+            ls -la dist/
+          else
+            echo "❌ Package output directory not found"
+            exit 1
+          fi
+
+      - name: Verify package output (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "Checking package output..."
+          if (Test-Path "dist") {
+            Write-Host "✅ Package output directory exists"
+            Get-ChildItem -Path "dist" -Recurse -Depth 2
+          } else {
+            Write-Host "❌ Package output directory not found"
+            exit 1
+          }
+
+      # ─────────────────────────────
+      # Summary
+      # ─────────────────────────────
+      - name: Build Summary
+        run: |
+          echo "========================================="
+          echo "🎉 Build test completed successfully!"
+          echo "OS: ${{ matrix.os }}"
+          echo "Node: 18.20.4"
+          echo "========================================="
