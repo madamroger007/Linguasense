@@ -10,7 +10,7 @@ import {
 } from '../components/ui/select';
 
 import { useSettings } from '../state/SettingsContext';
-import { useRealtimeSpeaking } from '../../app/hooks/useRealtimeSpeaking';
+import { useRealtimeSpeaking } from '../hooks/speaking/useRealtimeSpeaking';
 
 export default function Speaking() {
   const { speakingLanguage, setSpeakingLanguage } = useSettings();
