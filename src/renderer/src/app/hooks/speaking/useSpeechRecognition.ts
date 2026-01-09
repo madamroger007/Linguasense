@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
 interface RealtimeSpeechOptions {
-  /**
-   * autoRestart:
-   * - true  → mic otomatis hidup lagi setelah selesai bicara (realtime)
-   * - false → one-shot (sekali bicara)
-   */
   autoRestart?: boolean;
 }
 
@@ -18,9 +13,6 @@ export function useSpeechRecognition(
 
   const [listening, setListening] = useState(false);
 
-  // =========================
-  // CREATE RECOGNITION
-  // =========================
   const createRecognition = () => {
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
@@ -46,7 +38,6 @@ export function useSpeechRecognition(
       console.warn('SpeechRecognition error:', event.error);
 
       if (event.error === 'network') {
-        // Electron limitation → jangan matikan app
         setListening(false);
         return;
       }
@@ -55,7 +46,6 @@ export function useSpeechRecognition(
     };
 
     recognition.onend = () => {
-      // 🔥 realtime restart logic
       if (
         options.autoRestart &&
         !isManuallyStoppedRef.current
