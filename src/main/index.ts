@@ -1,7 +1,9 @@
 import { app, shell, BrowserWindow, ipcMain, session } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+const icon = join(__dirname, '../../resources/icon.png')
+import './ipc/ai';
+import './ipc/audio';
 
 /**
  * =========================
@@ -11,6 +13,8 @@ import icon from '../../resources/icon.png?asset'
 app.commandLine.appendSwitch('enable-speech-input')
 app.commandLine.appendSwitch('enable-speech-api')
 app.commandLine.appendSwitch('use-fake-ui-for-media-stream') // auto allow mic (DEV)
+app.commandLine.appendSwitch('disable-http-cache');
+app.commandLine.appendSwitch('disable-background-networking');
 
 /**
  * =========================
