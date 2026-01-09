@@ -1,22 +1,19 @@
-import { contextBridge } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
+import { contextBridge, ipcRenderer } from 'electron';
+import { AudioChunk } from '../shared/types/audio';
 
-// Custom APIs for renderer
-const api = {}
+contextBridge.exposeInMainWorld('audio', {
+  start: () => ipcRenderer.send('audio:start'),
+  stop: () => ipcRenderer.send('audio:stop'),
+  sendChunk: (chunk: AudioChunk) =>
+    ipcRenderer.send('audio:chunk', chunk),
+});
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
-if (process.contextIsolated) {
-  try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
-  } catch (error) {
-    console.error(error)
-  }
-} else {
-  // @ts-ignore (define in dts)
-  window.electron = electronAPI
-  // @ts-ignore (define in dts)
-  window.api = api
-}
+contextBridge.exposeInMainWorld('ai', {
+  speak: (payload: any) =>
+    ipcRenderer.invoke('ai:speak', payload),
+
+  onWhisperText: (cb: (text: string) => void) => {
+    ipcRenderer.removeAllListeners('ai:text');
+    ipcRenderer.on('ai:text', (_, text) => cb(text));
+  },
+});
