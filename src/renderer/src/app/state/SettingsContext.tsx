@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { AIProvider } from '../../model/ai/types';
+import { AIProvider } from '../../../../shared/types/aiprovider';
 
 interface SettingsContextType {
   fontSize: number;
