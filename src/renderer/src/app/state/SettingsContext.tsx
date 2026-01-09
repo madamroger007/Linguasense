@@ -1,14 +1,22 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { AIProvider } from '../../../../shared/types/aiprovider';
 
 interface SettingsContextType {
   fontSize: number;
   setFontSize: (size: number) => void;
+
   dailyReminders: boolean;
   setDailyReminders: (enabled: boolean) => void;
+
   autoRun: boolean;
   setAutoRun: (enabled: boolean) => void;
+
+  aiProvider: AIProvider;
+  setAiProvider: (provider: AIProvider) => void;
+
   aiModel: string;
   setAiModel: (model: string) => void;
+
   speakingLanguage: string;
   setSpeakingLanguage: (language: string) => void;
 }
@@ -19,43 +27,65 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [fontSize, setFontSizeState] = useState(16);
   const [dailyReminders, setDailyRemindersState] = useState(true);
   const [autoRun, setAutoRunState] = useState(true);
-  const [aiModel, setAiModelState] = useState('chatgpt');
-  const [speakingLanguage, setSpeakingLanguageState] = useState('english-us');
 
-  // Load all settings from localStorage on mount
+  const [aiProvider, setAiProviderState] =
+    useState<AIProvider>('openai');
+  const [aiModel, setAiModelState] =
+    useState('gpt-4o-mini');
+
+  const [speakingLanguage, setSpeakingLanguageState] =
+    useState('english-us');
+
+  // =========================
+  // LOAD FROM localStorage
+  // =========================
   useEffect(() => {
     const savedFontSize = localStorage.getItem('fontSize');
     const savedReminders = localStorage.getItem('dailyReminders');
     const savedAutoRun = localStorage.getItem('autoRun');
-    const savedAiModel = localStorage.getItem('aiModel');
+    const savedProvider = localStorage.getItem('aiProvider');
+    const savedModel = localStorage.getItem('aiModel');
     const savedLanguage = localStorage.getItem('speakingLanguage');
 
-    if (savedFontSize) setFontSizeState(parseInt(savedFontSize));
+    if (savedFontSize) setFontSizeState(Number(savedFontSize));
     if (savedReminders) setDailyRemindersState(savedReminders === 'true');
     if (savedAutoRun) setAutoRunState(savedAutoRun === 'true');
-    if (savedAiModel) setAiModelState(savedAiModel);
+    if (savedProvider) setAiProviderState(savedProvider as AIProvider);
+    if (savedModel) setAiModelState(savedModel);
     if (savedLanguage) setSpeakingLanguageState(savedLanguage);
 
-    // Apply font size globally
-    const fontSize = savedFontSize ? parseInt(savedFontSize) : 16;
-    document.documentElement.style.setProperty('--app-font-size', `${fontSize}px`);
+    const appliedFontSize = savedFontSize ? Number(savedFontSize) : 16;
+    document.documentElement.style.setProperty(
+      '--app-font-size',
+      `${appliedFontSize}px`
+    );
   }, []);
 
-  // Wrapper functions that save to localStorage
+  // =========================
+  // SETTERS (WITH PERSIST)
+  // =========================
   const setFontSize = (size: number) => {
     setFontSizeState(size);
     localStorage.setItem('fontSize', size.toString());
-    document.documentElement.style.setProperty('--app-font-size', `${size}px`);
+    document.documentElement.style.setProperty(
+      '--app-font-size',
+      `${size}px`
+    );
   };
 
   const setDailyReminders = (enabled: boolean) => {
     setDailyRemindersState(enabled);
-    localStorage.setItem('dailyReminders', enabled.toString());
+    localStorage.setItem('dailyReminders', String(enabled));
   };
 
   const setAutoRun = (enabled: boolean) => {
     setAutoRunState(enabled);
-    localStorage.setItem('autoRun', enabled.toString());
+    localStorage.setItem('autoRun', String(enabled));
+  };
+
+  const setAiProvider = (provider: AIProvider) => {
+    setAiProviderState(provider);
+    localStorage.setItem('aiProvider', provider);
   };
 
   const setAiModel = (model: string) => {
@@ -73,12 +103,19 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       value={{
         fontSize,
         setFontSize,
+
         dailyReminders,
         setDailyReminders,
+
         autoRun,
         setAutoRun,
+
+        aiProvider,
+        setAiProvider,
+
         aiModel,
         setAiModel,
+
         speakingLanguage,
         setSpeakingLanguage,
       }}
@@ -88,10 +125,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// =========================
+// HOOK
+// =========================
 export function useSettings() {
   const context = useContext(SettingsContext);
-  if (context === undefined) {
-    throw new Error('useSettings must be used within a SettingsProvider');
+  if (!context) {
+    throw new Error('useSettings must be used within SettingsProvider');
   }
   return context;
 }
