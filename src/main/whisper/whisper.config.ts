@@ -1,19 +1,19 @@
 import path from 'path';
 
 const WHISPER_ROOT =
-  process.env.WHISPER_PATH ||
-  'D:/App/whisper-bin-x64/Release'; // fallback dev only
+  path.resolve(__dirname, '..', '..', 'resources', 'whisper');
 
 export const WHISPER_CONFIG = {
   binaryPath: path.join(
     WHISPER_ROOT,
-    'whisper-cli.exe'
+    'bin',
+    'whisper-cli'
   ),
 
   modelPath: path.join(
     WHISPER_ROOT,
     'models',
-    'ggml-base.bin'
+    'ggml-small.bin'
   ),
 
   language: 'auto',

@@ -1,14 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
-import { consumeAudio } from './whisper.stream';
 import { WHISPER_CONFIG } from './whisper.config';
 
-export async function runWhisperOnce(): Promise<string> {
-  const pcm = consumeAudio();
-  if (!pcm.length) return '';
+export async function transcribePCM(
+  pcm: Float32Array
+): Promise<string> {
+  if (!pcm || pcm.length === 0) return '';
 
-  const wavPath = path.join(process.cwd(), 'temp.wav');
+  const wavPath = path.join(process.cwd(), '/resources/ffmeg/test.wav');
 
   writeWav(wavPath, pcm);
 
@@ -20,7 +20,7 @@ export async function runWhisperOnce(): Promise<string> {
     return '';
   }
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const p = spawn(
       WHISPER_CONFIG.binaryPath,
       [
@@ -43,9 +43,11 @@ export async function runWhisperOnce(): Promise<string> {
       console.error('[WHISPER]', d.toString());
     });
 
+    p.on('error', reject);
     p.on('close', () => resolve(out.trim()));
   });
 }
+
 
 
 function writeWav(file: string, pcm: Float32Array) {
