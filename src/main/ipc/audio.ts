@@ -1,12 +1,47 @@
-import { ipcMain } from 'electron';
-import { pushAudioChunk } from '../whisper/whisper.stream';
-import { runWhisperOnce } from '../whisper/whisper.service';
+import { ipcMain, BrowserWindow } from 'electron';
+import {
+  pushAudioChunk,
+  consumeAudio,
+  isSpeechFinished,
+  resetAudioBuffer
+} from '../whisper/whisper.stream';
+import { transcribePCM } from '../whisper/whisper.service';
 
-ipcMain.on('audio:chunk', async (event, chunk) => {
+let processing = false;
+let lastTranscribeAt = 0;
+
+const TRANSCRIBE_COOLDOWN_MS = 1200;
+
+ipcMain.on('audio:chunk', async (_, chunk) => {
+  // ✅ SELALU push audio (update lastSoundAt)
   pushAudioChunk(chunk);
 
-  const text = await runWhisperOnce();
-  if (text) {
-    event.sender.send('ai:text', text);
+  // 🔒 block processing saat AI bicara
+  if ((global as any).isAISpeaking) return;
+
+  if (processing) return;
+  if (!isSpeechFinished()) return;
+
+  const now = Date.now();
+  if (now - lastTranscribeAt < TRANSCRIBE_COOLDOWN_MS) return;
+
+  const audio = consumeAudio();
+  if (!audio) return;
+
+  processing = true;
+  lastTranscribeAt = now;
+
+  try {
+    const text = await transcribePCM(audio);
+    if (!text) return;
+
+    BrowserWindow.getAllWindows()[0]
+      ?.webContents.send('ai:text', text);
+  } finally {
+    processing = false;
   }
+});
+
+ipcMain.handle('audio:reset', () => {
+  resetAudioBuffer();
 });
