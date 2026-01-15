@@ -9,7 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
+import { Input } from '../components/ui/input';
 import { useSettings } from '../state/SettingsContext';
+import { AI_CATALOG } from '../../../../shared/model/aiCatalog';
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
@@ -22,6 +24,10 @@ export default function Settings() {
     setAutoRun,
     aiModel,
     setAiModel,
+    aiProvider,
+    setAiProvider,
+    APIKey,
+    setAPIKey
   } = useSettings();
 
   return (
@@ -110,6 +116,27 @@ export default function Settings() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
+                  Select AI Provider
+                </label>
+                <Select value={aiProvider} onValueChange={setAiProvider}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select AI provider" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(AI_CATALOG).map(([key, cfg]) => (
+                      <SelectItem key={key} value={key}>
+                        {cfg.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <p className="text-xs text-muted-foreground mt-2">
+                  Choose your preferred AI assistant for language tutoring
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
                   Select AI Model
                 </label>
                 <Select value={aiModel} onValueChange={setAiModel}>
@@ -117,18 +144,31 @@ export default function Settings() {
                     <SelectValue placeholder="Select AI model" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="lmstudio">LM Studio</SelectItem>
-                    <SelectItem value="ollama">Ollama</SelectItem>
-                    <SelectItem value="chatgpt">ChatGPT</SelectItem>
-                    <SelectItem value="claude">Claude</SelectItem>
-                    <SelectItem value="ollama-cloud">Ollama Cloud</SelectItem>
-                    <SelectItem value="deepseek">DeepSeek</SelectItem>
+                    {AI_CATALOG[aiProvider].models.map((model) => (
+                      <SelectItem key={model.id} value={model.id}>
+                        {model.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+
                 <p className="text-xs text-muted-foreground mt-2">
                   Choose your preferred AI assistant for language tutoring
                 </p>
               </div>
+              {AI_CATALOG[aiProvider].requiresApiKey && (
+                <div>
+                  <Input
+                    type="password"
+                    value={APIKey}
+                    onChange={(e) => setAPIKey(e.target.value)}
+                    placeholder="Enter API Key"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    API key required for {AI_CATALOG[aiProvider].label}
+                  </p>
+                </div>
+              )}
             </div>
           </Card>
         </div>

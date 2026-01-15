@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { AIProvider } from '../../../../shared/types/aiprovider';
-
+import { AI_CATALOG } from '../../../../shared/model/aiCatalog';
 interface SettingsContextType {
   fontSize: number;
   setFontSize: (size: number) => void;
@@ -19,6 +19,9 @@ interface SettingsContextType {
 
   speakingLanguage: string;
   setSpeakingLanguage: (language: string) => void;
+
+  APIKey: string;
+  setAPIKey: (key: string) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -27,6 +30,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [fontSize, setFontSizeState] = useState(16);
   const [dailyReminders, setDailyRemindersState] = useState(true);
   const [autoRun, setAutoRunState] = useState(true);
+
+  const [APIKey, setAPIKeyState] = useState('');
 
   const [aiProvider, setAiProviderState] =
     useState<AIProvider>('openai');
@@ -46,6 +51,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const savedProvider = localStorage.getItem('aiProvider');
     const savedModel = localStorage.getItem('aiModel');
     const savedLanguage = localStorage.getItem('speakingLanguage');
+    const savedAPIKey = localStorage.getItem('apiKey');
 
     if (savedFontSize) setFontSizeState(Number(savedFontSize));
     if (savedReminders) setDailyRemindersState(savedReminders === 'true');
@@ -53,6 +59,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     if (savedProvider) setAiProviderState(savedProvider as AIProvider);
     if (savedModel) setAiModelState(savedModel);
     if (savedLanguage) setSpeakingLanguageState(savedLanguage);
+    if (savedAPIKey) setAPIKeyState(savedAPIKey);
 
     const appliedFontSize = savedFontSize ? Number(savedFontSize) : 16;
     document.documentElement.style.setProperty(
@@ -86,6 +93,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const setAiProvider = (provider: AIProvider) => {
     setAiProviderState(provider);
     localStorage.setItem('aiProvider', provider);
+
+    const firstModel = AI_CATALOG[provider]?.models[0]?.id;
+    if (firstModel) {
+      setAiModelState(firstModel);
+      localStorage.setItem('aiModel', firstModel);
+    }
   };
 
   const setAiModel = (model: string) => {
@@ -98,6 +111,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('speakingLanguage', language);
   };
 
+  const setAPIKey = (key: string) => {
+    setAPIKeyState(key);
+    localStorage.setItem('apiKey', key);
+  }
   return (
     <SettingsContext.Provider
       value={{
@@ -118,6 +135,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
         speakingLanguage,
         setSpeakingLanguage,
+
+        APIKey,
+        setAPIKey,
       }}
     >
       {children}

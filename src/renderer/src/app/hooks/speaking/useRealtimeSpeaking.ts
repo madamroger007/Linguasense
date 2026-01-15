@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSettings } from '../../state/SettingsContext';
-import { speakingGreeting } from '../../../../../shared/model/prompts/speaking';
+import { speakingPrompt } from '../../../../../shared/model/prompts/speaking';
 import { getMicrophoneStream } from './useMicrophone';
 import { startAudioChunking } from './useAudioChunk';
+import { playTTS } from '../../../utils/text_speech';
 
 type Message = {
   role: 'user' | 'ai';
@@ -10,12 +11,12 @@ type Message = {
 };
 
 export function useRealtimeSpeaking() {
-  const { aiProvider, aiModel, speakingLanguage } = useSettings();
+  const { aiProvider, aiModel, speakingLanguage, APIKey } = useSettings();
 
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'ai',
-      content: speakingGreeting(speakingLanguage),
+      content: speakingPrompt(speakingLanguage),
     },
   ]);
 
@@ -24,6 +25,7 @@ export function useRealtimeSpeaking() {
 
   const stopChunkingRef = useRef<null | (() => void)>(null);
   const isMountedRef = useRef(true);
+  const isAISpeakingRef = useRef(false);
 
   // =========================
   // Reset greeting on language change
@@ -32,7 +34,7 @@ export function useRealtimeSpeaking() {
     setMessages([
       {
         role: 'ai',
-        content: speakingGreeting(speakingLanguage),
+        content: speakingPrompt(speakingLanguage),
       },
     ]);
   }, [speakingLanguage]);
@@ -42,8 +44,11 @@ export function useRealtimeSpeaking() {
   // =========================
   const handleWhisperText = useCallback(
     async (spokenText: string) => {
-      if (!spokenText || !isMountedRef.current) return;
-
+      if (!spokenText || isAISpeakingRef.current || !isMountedRef.current) {
+        console.log('[VOICE] Ignored input, AI is speaking');
+        return;
+      }
+      // tampilkan user text
       setMessages((prev) => [
         ...prev,
         { role: 'user', content: spokenText },
@@ -52,11 +57,15 @@ export function useRealtimeSpeaking() {
       setLoading(true);
 
       try {
+        // =========================
+        // 1. AI RESPONSE (TEXT)
+        // =========================
         const reply = await window.ai.speak({
           provider: aiProvider,
           model: aiModel,
           language: speakingLanguage,
           message: spokenText,
+          apiKey: APIKey,
         });
 
         if (!isMountedRef.current) return;
@@ -65,20 +74,47 @@ export function useRealtimeSpeaking() {
           ...prev,
           { role: 'ai', content: reply },
         ]);
-      } catch {
+
+        // =========================
+        // 2. TEXT → SPEECH (PIPER)
+        // =========================
+        // stop mic supaya tidak feedback
+        isAISpeakingRef.current = true;
+        window.audio.stop();
+        await window.audio.resetBuffer();
+        // =========================
+        // 3. TEXT → SPEECH (WAIT!)
+        // =========================
+        await playTTS(reply);
+
+        // =========================
+        // 4. UNLOCK + RESUME MIC
+        // =========================
+        isAISpeakingRef.current = false;
+        await window.audio.resetBuffer();
+        if (isMountedRef.current) {
+          window.audio.start();
+        }
+
+      } catch (err) {
+        console.error(err);
         setMessages((prev) => [
           ...prev,
           {
             role: 'ai',
-            content:
-              '⚠️ Sorry, something went wrong. Please try again.',
+            content: '⚠️ Sorry, something went wrong.',
           },
         ]);
+
+        // lanjutkan mic setelah AI selesai bicara
+        isAISpeakingRef.current = false;
+        window.audio.start();
       } finally {
+
         setLoading(false);
       }
     },
-    [aiProvider, aiModel, speakingLanguage]
+    [aiProvider, aiModel, speakingLanguage, APIKey]
   );
 
   // =========================
@@ -89,7 +125,6 @@ export function useRealtimeSpeaking() {
 
     const stream = await getMicrophoneStream();
 
-    // ✅ SEKARANG VALID
     window.ai.onWhisperText(handleWhisperText);
 
     stopChunkingRef.current = startAudioChunking(
