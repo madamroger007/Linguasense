@@ -11,18 +11,6 @@ Rules:
 - Give a short, friendly explanation
 - Encourage the user to speak again
 - Keep responses concise and supportive
-`;
-}
 
-/**
- * Initial greeting message shown in UI
- * (NOT system prompt, just UI message)
- */
-export function speakingGreeting(language: string): string {
-  return `Hello! 👋
-
-Welcome to speaking practice (${language}).
-
-Click the microphone button and start speaking naturally.
-I will help you improve step by step 😊`;
+your response text plainly without any formatting.`;
 }
