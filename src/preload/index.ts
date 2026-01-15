@@ -6,6 +6,9 @@ contextBridge.exposeInMainWorld('audio', {
   stop: () => ipcRenderer.send('audio:stop'),
   sendChunk: (chunk: AudioChunk) =>
     ipcRenderer.send('audio:chunk', chunk),
+  resetBuffer: () => ipcRenderer.invoke('audio:reset'),
+
+
 });
 
 contextBridge.exposeInMainWorld('ai', {
@@ -13,7 +16,11 @@ contextBridge.exposeInMainWorld('ai', {
     ipcRenderer.invoke('ai:speak', payload),
 
   onWhisperText: (cb: (text: string) => void) => {
-    ipcRenderer.removeAllListeners('ai:text');
     ipcRenderer.on('ai:text', (_, text) => cb(text));
-  },
+  }
+});
+
+contextBridge.exposeInMainWorld('tts', {
+  speak: (text: string) =>
+    ipcRenderer.invoke('tts:speak', text),
 });
