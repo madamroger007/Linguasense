@@ -3,7 +3,7 @@ import { speakingPrompt } from '../../../shared/model/prompts/speaking';
 import { AIRequest } from '../../../shared/types/aiprovider';
 
 export async function speakWithDeepSeek(request: AIRequest) {
-  const client = createAIClient('deepseek');
+  const client = createAIClient('deepseek', request.apiKey);
 
   const completion = await client.chat.completions.create({
     model: request.model, // contoh: deepseek-chat

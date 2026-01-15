@@ -8,10 +8,10 @@ export async function speakWithAI(
   provider: AIProvider,
   request: AIRequest
 ): Promise<string> {
+  console.log(request);
   switch (provider) {
     case 'openai':
       return speakWithOpenAI(request);
-
     case 'lmstudio':
       return speakWithLMStudio(request);
 

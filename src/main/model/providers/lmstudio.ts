@@ -3,7 +3,7 @@ import { speakingPrompt } from '../../../shared/model/prompts/speaking';
 import { AIRequest } from '../../../shared/types/aiprovider';
 
 export async function speakWithLMStudio(request: AIRequest) {
-  const client = createAIClient('lmstudio');
+  const client = createAIClient('lmstudio', request.apiKey);
 
   const completion = await client.chat.completions.create({
     model: request.model,

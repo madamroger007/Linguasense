@@ -1,51 +1,53 @@
 import OpenAI from 'openai';
 import { AIProvider } from '../../shared/types/aiprovider';
 
-export function createAIClient(provider: AIProvider): OpenAI {
+export function createAIClient(provider: AIProvider, apiKey: string): OpenAI {
+
   switch (provider) {
     case 'lmstudio':
+      console.log('Creating LMStudio client with API key:', apiKey);
       return new OpenAI({
-        apiKey: 'lm-studio',
-        baseURL: 'http://192.168.1.2:1234/v1',
+        baseURL: 'http://127.0.0.1:1234/v1',
         dangerouslyAllowBrowser: true,
+        apiKey: apiKey,
       });
 
     case 'llma3':
       return new OpenAI({
-        apiKey: 'llma3',
+        apiKey: apiKey,
         baseURL: process.env.VITE_LLMA3_API_KEY,
         dangerouslyAllowBrowser: true,
       });
     case 'openai':
       return new OpenAI({
-        apiKey: process.env.VITE_OPENAI_API_KEY,
+        apiKey: apiKey,
         dangerouslyAllowBrowser: true,
       });
 
     case 'deepseek':
       return new OpenAI({
-        apiKey: process.env.VITE_DEEPSEEK_API_KEY,
+        apiKey: apiKey,
         baseURL: 'https://api.deepseek.com/v1',
         dangerouslyAllowBrowser: true,
       });
 
     case 'gemini':
       return new OpenAI({
-        apiKey: process.env.VITE_GEMINI_API_KEY,
+        apiKey: apiKey,
         baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
         dangerouslyAllowBrowser: true,
       });
 
     case 'claude':
       return new OpenAI({
-        apiKey: process.env.VITE_GEMINI_API_KEY,
+        apiKey: apiKey,
         baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
         dangerouslyAllowBrowser: true,
       });
 
     case 'grok':
       return new OpenAI({
-        apiKey: process.env.VITE_GEMINI_API_KEY,
+        apiKey: apiKey,
         baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
         dangerouslyAllowBrowser: true,
       });

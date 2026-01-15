@@ -3,7 +3,7 @@ import { speakingPrompt } from '../../../shared/model/prompts/speaking';
 import { AIRequest } from '../../../shared/types/aiprovider';
 
 export async function speakWithOpenAI(request: AIRequest) {
-  const client = createAIClient('openai');
+  const client = createAIClient('openai', request.apiKey);
 
   const completion = await client.chat.completions.create({
     model: request.model,
