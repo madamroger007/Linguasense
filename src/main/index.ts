@@ -4,6 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 const icon = join(__dirname, '../../resources/icon.png')
 import './ipc/ai';
 import './ipc/audio';
+import './ipc/tts';
 
 /**
  * =========================
