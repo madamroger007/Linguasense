@@ -1,9 +1,8 @@
 export type AIProvider =
-  | 'openai'
   | 'lmstudio'
+  | 'openai'
   | 'llma3'
   | 'claude'
-  | 'grok'
   | 'gemini'
   | 'deepseek';
 

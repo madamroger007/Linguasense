@@ -1,7 +1,7 @@
-export function playTTS(text: string): Promise<void> {
+export function playTTS(text: string, baseLanguage: string): Promise<void> {
   return new Promise(async (resolve, reject) => {
     try {
-      const { audio, mime } = await window.tts.speak(text);
+      const { audio, mime } = await window.tts.speak(text, baseLanguage);
 
       const blob = new Blob([new Uint8Array(audio)], { type: mime });
       const url = URL.createObjectURL(blob);

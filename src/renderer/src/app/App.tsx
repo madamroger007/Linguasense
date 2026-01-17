@@ -2,6 +2,7 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from 'next-themes';
 import { useEffect } from 'react';
 import { SettingsProvider } from './state/SettingsContext';
+import { SpeakingProvider } from './state/SpeakingContext';
 import {
   DesktopSidebar,
   TabletHeader,
@@ -40,19 +41,21 @@ function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <SettingsProvider>
-        <HashRouter>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/speaking" element={<Speaking />} />
-              <Route path="/reading" element={<Reading />} />
-              <Route path="/writing" element={<Writing />} />
-              <Route path="/settings" element={<Settings />} />
-            </Routes>
-          </Layout>
-        </HashRouter>
-      </SettingsProvider>
+      <SpeakingProvider>
+        <SettingsProvider>
+          <HashRouter>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/speaking" element={<Speaking />} />
+                <Route path="/reading" element={<Reading />} />
+                <Route path="/writing" element={<Writing />} />
+                <Route path="/settings" element={<Settings />} />
+              </Routes>
+            </Layout>
+          </HashRouter>
+        </SettingsProvider>
+      </SpeakingProvider>
     </ThemeProvider>
   );
 }

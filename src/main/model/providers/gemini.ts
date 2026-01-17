@@ -6,7 +6,7 @@ export async function speakWithGemini(request: AIRequest) {
   const client = createAIClient('gemini', request.apiKey);
 
   const completion = await client.chat.completions.create({
-    model: request.model, // contoh: gemini-1.5-flash
+    model: request.model, 
     messages: [
       { role: 'system', content: speakingPrompt(request.language) },
       { role: 'user', content: request.message },

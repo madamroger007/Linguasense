@@ -1,19 +1,18 @@
-import path from 'path';
+import { getResourcePath } from '../utils/resourcePath';
 
-const WHISPER_ROOT =
-  path.resolve(__dirname, '..', '..', 'resources', 'whisper');
+const isWin = process.platform === 'win32';
 
 export const WHISPER_CONFIG = {
-  binaryPath: path.join(
-    WHISPER_ROOT,
+  binaryPath: getResourcePath(
+    'whisper',
     'bin',
-    'whisper-cli'
+    isWin ? 'whisper-cli.exe' : 'whisper-cli'
   ),
 
-  modelPath: path.join(
-    WHISPER_ROOT,
+  modelPath: getResourcePath(
+    'whisper',
     'models',
-    'ggml-small.bin'
+    'ggml-large-v3-turbo.bin'
   ),
 
   language: 'auto',

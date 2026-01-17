@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { AIProvider } from '../../../../shared/types/aiprovider';
-import { AI_CATALOG } from '../../../../shared/model/aiCatalog';
+import { AI_CATALOG } from '../../../../shared/utils/aiCatalog';
 interface SettingsContextType {
   fontSize: number;
   setFontSize: (size: number) => void;
@@ -22,6 +22,9 @@ interface SettingsContextType {
 
   APIKey: string;
   setAPIKey: (key: string) => void;
+
+  baseLanguage: string;
+  setBaseLanguage: (language: string) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -30,8 +33,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [fontSize, setFontSizeState] = useState(16);
   const [dailyReminders, setDailyRemindersState] = useState(true);
   const [autoRun, setAutoRunState] = useState(true);
+  const [baseLanguage, setBaseLanguageState] = useState('');
 
-  const [APIKey, setAPIKeyState] = useState('');
+  const [APIKey, setAPIKeyState] = useState('id_ID');
 
   const [aiProvider, setAiProviderState] =
     useState<AIProvider>('openai');
@@ -52,7 +56,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const savedModel = localStorage.getItem('aiModel');
     const savedLanguage = localStorage.getItem('speakingLanguage');
     const savedAPIKey = localStorage.getItem('apiKey');
-
+    const savedBaseLanguage = localStorage.getItem('baseLanguage');
     if (savedFontSize) setFontSizeState(Number(savedFontSize));
     if (savedReminders) setDailyRemindersState(savedReminders === 'true');
     if (savedAutoRun) setAutoRunState(savedAutoRun === 'true');
@@ -60,6 +64,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     if (savedModel) setAiModelState(savedModel);
     if (savedLanguage) setSpeakingLanguageState(savedLanguage);
     if (savedAPIKey) setAPIKeyState(savedAPIKey);
+    if (savedBaseLanguage) setBaseLanguageState(savedBaseLanguage);
 
     const appliedFontSize = savedFontSize ? Number(savedFontSize) : 16;
     document.documentElement.style.setProperty(
@@ -115,6 +120,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setAPIKeyState(key);
     localStorage.setItem('apiKey', key);
   }
+
+  const setBaseLanguage = (language: string) => {
+    setBaseLanguageState(language);
+    localStorage.setItem('baseLanguage', language);
+  }
   return (
     <SettingsContext.Provider
       value={{
@@ -138,6 +148,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
         APIKey,
         setAPIKey,
+
+        baseLanguage,
+        setBaseLanguage,
       }}
     >
       {children}

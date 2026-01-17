@@ -11,7 +11,8 @@ import {
 } from '../components/ui/select';
 import { Input } from '../components/ui/input';
 import { useSettings } from '../state/SettingsContext';
-import { AI_CATALOG } from '../../../../shared/model/aiCatalog';
+import { AI_CATALOG } from '../../../../shared/utils/aiCatalog';
+import { LANGUAGES } from '../../../../shared/utils/language';
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
@@ -27,7 +28,9 @@ export default function Settings() {
     aiProvider,
     setAiProvider,
     APIKey,
-    setAPIKey
+    setAPIKey,
+    baseLanguage,
+    setBaseLanguage,
   } = useSettings();
 
   return (
@@ -82,6 +85,27 @@ export default function Settings() {
           <Card className="p-6">
             <h3 className="text-xl mb-4">Learning Preferences</h3>
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Select Base Language
+                </label>
+                <Select value={baseLanguage} onValueChange={setBaseLanguage}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Base Language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LANGUAGES.map(({ id, label }) => (
+                      <SelectItem key={id} value={id}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <p className="text-xs text-muted-foreground mt-2">
+                  Choose your preferred AI assistant for language tutoring
+                </p>
+              </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Daily Reminders</p>
@@ -110,7 +134,6 @@ export default function Settings() {
             </div>
           </Card>
 
-          {/* AI Model Selection */}
           <Card className="p-6">
             <h3 className="text-xl mb-4">AI Model</h3>
             <div className="space-y-4">

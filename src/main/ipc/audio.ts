@@ -13,7 +13,6 @@ let lastTranscribeAt = 0;
 const TRANSCRIBE_COOLDOWN_MS = 1200;
 
 ipcMain.on('audio:chunk', async (_, chunk) => {
-  // ✅ SELALU push audio (update lastSoundAt)
   pushAudioChunk(chunk);
 
   // 🔒 block processing saat AI bicara

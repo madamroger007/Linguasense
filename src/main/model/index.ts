@@ -8,7 +8,6 @@ export async function speakWithAI(
   provider: AIProvider,
   request: AIRequest
 ): Promise<string> {
-  console.log(request);
   switch (provider) {
     case 'openai':
       return speakWithOpenAI(request);
@@ -21,9 +20,6 @@ export async function speakWithAI(
       return speakWithLMStudio(request);
 
     case 'claude':
-      return speakWithLMStudio(request);
-
-    case 'grok':
       return speakWithLMStudio(request);
 
     case 'deepseek':

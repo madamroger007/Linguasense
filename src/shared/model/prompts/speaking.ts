@@ -1,4 +1,4 @@
-export function speakingPrompt(language: string): string {
+export function speakingPrompt(language: string, baseLanguage: string): string {
   return `
 You are a professional language tutor.
 
@@ -12,5 +12,5 @@ Rules:
 - Encourage the user to speak again
 - Keep responses concise and supportive
 
-your response text plainly without any formatting.`;
+your response text plainly without any formatting and use language ${baseLanguage}.`;
 }

@@ -20,10 +20,11 @@ declare global {
       onWhisperText(cb: (text: string) => void): void;
     };
     tts: {
-      speak(text: string): Promise<{
+      speak(text: string, baseLanguage: string): Promise<{
         audio: ArrayBuffer;
         mime: string;
       }>;
+
     };
   }
 }

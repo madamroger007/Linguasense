@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSettings } from '../../state/SettingsContext';
+import { useSpeaking } from '../../state/SpeakingContext';
 import { speakingPrompt } from '../../../../../shared/model/prompts/speaking';
 import { getMicrophoneStream } from './useMicrophone';
 import { startAudioChunking } from './useAudioChunk';
@@ -11,55 +12,60 @@ type Message = {
 };
 
 export function useRealtimeSpeaking() {
-  const { aiProvider, aiModel, speakingLanguage, APIKey } = useSettings();
+  const { aiProvider, aiModel, speakingLanguage, APIKey, baseLanguage} = useSettings();
+  const { store, dispatch } = useSpeaking();
 
   const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'ai',
-      content: speakingPrompt(speakingLanguage),
-    },
+    { role: 'ai', content: speakingPrompt(speakingLanguage, baseLanguage) },
   ]);
-
-  const [loading, setLoading] = useState(false);
-  const [listening, setListening] = useState(false);
 
   const stopChunkingRef = useRef<null | (() => void)>(null);
   const isMountedRef = useRef(true);
-  const isAISpeakingRef = useRef(false);
 
-  // =========================
-  // Reset greeting on language change
-  // =========================
+  const listening = store.state === 'listening';
+  // reset greeting on language change
   useEffect(() => {
-    setMessages([
-      {
-        role: 'ai',
-        content: speakingPrompt(speakingLanguage),
-      },
-    ]);
+    setMessages([{ role: 'ai', content: speakingPrompt(speakingLanguage, baseLanguage) }]);
   }, [speakingLanguage]);
 
   // =========================
-  // Handle text from Whisper (MAIN)
+  // STOP MIC (hard stop)
+  // =========================
+  const stopMic = useCallback(() => {
+    stopChunkingRef.current?.();
+    stopChunkingRef.current = null;
+    window.audio.stop();
+  }, []);
+
+  // =========================
+  // START MIC
+  // =========================
+  const startMic = useCallback(async () => {
+    const stream = await getMicrophoneStream();
+
+    stopChunkingRef.current = startAudioChunking(stream, (chunk) => {
+      window.audio.sendChunk(chunk);
+    });
+
+    window.audio.start();
+  }, []);
+
+  // =========================
+  // HANDLE WHISPER RESULT
   // =========================
   const handleWhisperText = useCallback(
     async (spokenText: string) => {
-      if (!spokenText || isAISpeakingRef.current || !isMountedRef.current) {
-        console.log('[VOICE] Ignored input, AI is speaking');
-        return;
-      }
-      // tampilkan user text
-      setMessages((prev) => [
-        ...prev,
-        { role: 'user', content: spokenText },
-      ]);
+      if (!spokenText || !isMountedRef.current) return;
 
-      setLoading(true);
+      // 🔒 STOP MIC SEBELUM PROSES
+      stopMic();
+      dispatch({ type: 'PROCESSING' });
+      dispatch({ type: 'SET_LOADING', value: true });
+
+      setMessages((prev) => [...prev, { role: 'user', content: spokenText }]);
 
       try {
-        // =========================
-        // 1. AI RESPONSE (TEXT)
-        // =========================
+        // AI text
         const reply = await window.ai.speak({
           provider: aiProvider,
           model: aiModel,
@@ -70,100 +76,53 @@ export function useRealtimeSpeaking() {
 
         if (!isMountedRef.current) return;
 
-        setMessages((prev) => [
-          ...prev,
-          { role: 'ai', content: reply },
-        ]);
+        setMessages((prev) => [...prev, { role: 'ai', content: reply }]);
 
-        // =========================
-        // 2. TEXT → SPEECH (PIPER)
-        // =========================
-        // stop mic supaya tidak feedback
-        isAISpeakingRef.current = true;
-        window.audio.stop();
+        // 🔊 AI SPEAKING
+        dispatch({ type: 'AI_START' });
+        (globalThis as any).isAISpeaking = true;
+
         await window.audio.resetBuffer();
-        // =========================
-        // 3. TEXT → SPEECH (WAIT!)
-        // =========================
-        await playTTS(reply);
+        await playTTS(reply, baseLanguage);
 
-        // =========================
-        // 4. UNLOCK + RESUME MIC
-        // =========================
-        isAISpeakingRef.current = false;
+        // 🔓 AI DONE → MIC ON AGAIN
+        (globalThis as any).isAISpeaking = false;
         await window.audio.resetBuffer();
-        if (isMountedRef.current) {
-          window.audio.start();
-        }
 
+        dispatch({ type: 'AI_END' });
       } catch (err) {
         console.error(err);
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: 'ai',
-            content: '⚠️ Sorry, something went wrong.',
-          },
-        ]);
-
-        // lanjutkan mic setelah AI selesai bicara
-        isAISpeakingRef.current = false;
-        window.audio.start();
-      } finally {
-
-        setLoading(false);
+        dispatch({ type: 'ERROR' });
       }
     },
-    [aiProvider, aiModel, speakingLanguage, APIKey]
+    [aiProvider, aiModel, speakingLanguage, APIKey, stopMic, dispatch]
   );
 
   // =========================
-  // START CALL
+  // STATE → SIDE EFFECT
   // =========================
-  const start = useCallback(async () => {
-    if (listening) return;
+  useEffect(() => {
+    if (store.state === 'listening') {
+      window.ai.onWhisperText(handleWhisperText);
+      startMic();
+    }
 
-    const stream = await getMicrophoneStream();
+    if (store.state === 'idle' || store.state === 'processing' || store.state === 'ai_speaking') {
+      stopMic();
+    }
+  }, [store.state, startMic, stopMic, handleWhisperText]);
 
-    window.ai.onWhisperText(handleWhisperText);
-
-    stopChunkingRef.current = startAudioChunking(
-      stream,
-      (chunk) => {
-        window.audio.sendChunk(chunk);
-      }
-    );
-
-    window.audio.start();
-    setListening(true);
-  }, [handleWhisperText, listening]);
-
-  // =========================
-  // STOP CALL
-  // =========================
-  const stop = useCallback(() => {
-    stopChunkingRef.current?.();
-    stopChunkingRef.current = null;
-
-    window.audio.stop();
-    setListening(false);
-  }, []);
-
-  // =========================
-  // CLEANUP
-  // =========================
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
-      stop();
+      stopMic();
     };
-  }, [stop]);
+  }, [stopMic]);
 
   return {
-    start,
-    stop,
+    start: () => dispatch({ type: 'START' }),
+    stop: () => dispatch({ type: 'STOP' }),
     listening,
-    messages,
-    loading,
+    messages
   };
 }
