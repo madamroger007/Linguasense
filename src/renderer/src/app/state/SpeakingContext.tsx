@@ -20,8 +20,7 @@ type SpeakingAction =
   | { type: 'AI_START' }
   | { type: 'AI_END' }
   | { type: 'SET_LOADING'; value: boolean }
-  | { type: 'ADD_MESSAGE'; message: Message }
-  | { type: 'RESET_MESSAGES'; language: string }
+  | { type: 'MESSAGES'; message: Message }
   | { type: 'ERROR' };
 
 type SpeakingStore = {
@@ -53,25 +52,13 @@ function speakingReducer(
     case 'ERROR':
       return { ...store, state: 'idle' };
 
-    case 'ADD_MESSAGE':
+    case 'MESSAGES':
       return {
         ...store,
         messages: [...store.messages, action.message],
       };
     case 'SET_LOADING':
       return { ...store, loading: action.value };
-
-    case 'RESET_MESSAGES':
-      return {
-        ...store,
-        messages: [
-          {
-            role: 'ai',
-            content: speakingPrompt(action.language),
-          },
-        ],
-      };
-
     default:
       return store;
   }

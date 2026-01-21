@@ -1,7 +1,7 @@
-export function playTTS(text: string, baseLanguage: string): Promise<void> {
+export function playTTS(text: string): Promise<void> {
   return new Promise(async (resolve, reject) => {
     try {
-      const { audio, mime } = await window.tts.speak(text, baseLanguage);
+      const { audio, mime } = await window.ai.tts(text);
 
       const blob = new Blob([new Uint8Array(audio)], { type: mime });
       const url = URL.createObjectURL(blob);
@@ -10,7 +10,7 @@ export function playTTS(text: string, baseLanguage: string): Promise<void> {
 
       audioEl.onended = () => {
         URL.revokeObjectURL(url);
-        resolve(); // ✅ BARU SELESAI DI SINI
+        resolve();
       };
 
       audioEl.onerror = (e) => {
@@ -18,7 +18,7 @@ export function playTTS(text: string, baseLanguage: string): Promise<void> {
         reject(e);
       };
 
-      await audioEl.play(); // hanya start
+      await audioEl.play();
     } catch (err) {
       reject(err);
     }

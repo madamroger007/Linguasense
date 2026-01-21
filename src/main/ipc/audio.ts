@@ -15,7 +15,6 @@ const TRANSCRIBE_COOLDOWN_MS = 1200;
 ipcMain.on('audio:chunk', async (_, chunk) => {
   pushAudioChunk(chunk);
 
-  // 🔒 block processing saat AI bicara
   if ((global as any).isAISpeaking) return;
 
   if (processing) return;

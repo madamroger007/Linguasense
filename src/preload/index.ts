@@ -16,11 +16,16 @@ contextBridge.exposeInMainWorld('ai', {
     ipcRenderer.invoke('ai:speak', payload),
 
   onWhisperText: (cb: (text: string) => void) => {
-    ipcRenderer.on('ai:text', (_, text) => cb(text));
-  }
-});
+    const listener = (_: any, text: string) => cb(text);
 
-contextBridge.exposeInMainWorld('tts', {
-  speak: (text: string) =>
-    ipcRenderer.invoke('tts:speak', text),
+    ipcRenderer.on('ai:text', listener);
+
+    // ✅ PENTING: return unsubscribe
+    return () => {
+      ipcRenderer.removeListener('ai:text', listener);
+    };
+  },
+
+  tts: (text: string, baseLanguage: string) =>
+    ipcRenderer.invoke('ai:tts', text, baseLanguage),
 });

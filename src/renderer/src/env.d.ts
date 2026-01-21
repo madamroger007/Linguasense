@@ -17,10 +17,9 @@ declare global {
         apiKey: string;
       }): Promise<string>;
 
-      onWhisperText(cb: (text: string) => void): void;
-    };
-    tts: {
-      speak(text: string, baseLanguage: string): Promise<{
+      onWhisperText(cb: (text: string) => void): () => void;
+
+      tts(text: string): Promise<{
         audio: ArrayBuffer;
         mime: string;
       }>;

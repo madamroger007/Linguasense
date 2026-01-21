@@ -49,4 +49,3 @@ export const LANGUAGES: LanguageOption[] = [
     label: 'Chinese (China)',
   },
 ];
-

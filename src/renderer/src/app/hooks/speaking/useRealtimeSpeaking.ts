@@ -12,35 +12,26 @@ type Message = {
 };
 
 export function useRealtimeSpeaking() {
-  const { aiProvider, aiModel, speakingLanguage, APIKey, baseLanguage} = useSettings();
+  const {
+    aiProvider,
+    aiModel,
+    speakingLanguage,
+    APIKey,
+  } = useSettings();
+
   const { store, dispatch } = useSpeaking();
 
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'ai', content: speakingPrompt(speakingLanguage, baseLanguage) },
-  ]);
-
   const stopChunkingRef = useRef<null | (() => void)>(null);
-  const isMountedRef = useRef(true);
+  const micRunningRef = useRef(false);
+  const handlingRef = useRef(false);
+  const mountedRef = useRef(true);
 
   const listening = store.state === 'listening';
-  // reset greeting on language change
-  useEffect(() => {
-    setMessages([{ role: 'ai', content: speakingPrompt(speakingLanguage, baseLanguage) }]);
-  }, [speakingLanguage]);
 
-  // =========================
-  // STOP MIC (hard stop)
-  // =========================
-  const stopMic = useCallback(() => {
-    stopChunkingRef.current?.();
-    stopChunkingRef.current = null;
-    window.audio.stop();
-  }, []);
-
-  // =========================
-  // START MIC
-  // =========================
   const startMic = useCallback(async () => {
+    if (micRunningRef.current) return;
+
+    micRunningRef.current = true;
     const stream = await getMicrophoneStream();
 
     stopChunkingRef.current = startAudioChunking(stream, (chunk) => {
@@ -50,22 +41,36 @@ export function useRealtimeSpeaking() {
     window.audio.start();
   }, []);
 
-  // =========================
-  // HANDLE WHISPER RESULT
-  // =========================
+  const stopMic = useCallback(() => {
+    if (!micRunningRef.current) return;
+
+    micRunningRef.current = false;
+    stopChunkingRef.current?.();
+    stopChunkingRef.current = null;
+
+    window.audio.stop();
+  }, []);
+
   const handleWhisperText = useCallback(
     async (spokenText: string) => {
-      if (!spokenText || !isMountedRef.current) return;
+      if (
+        !spokenText ||
+        handlingRef.current ||
+        !mountedRef.current
+      ) {
+        return;
+      }
 
-      // 🔒 STOP MIC SEBELUM PROSES
+      handlingRef.current = true;
       stopMic();
       dispatch({ type: 'PROCESSING' });
-      dispatch({ type: 'SET_LOADING', value: true });
-
-      setMessages((prev) => [...prev, { role: 'user', content: spokenText }]);
 
       try {
-        // AI text
+        dispatch({
+          type: "MESSAGES",
+          message: { role: 'user', content: spokenText }
+        });
+
         const reply = await window.ai.speak({
           provider: aiProvider,
           model: aiModel,
@@ -74,47 +79,58 @@ export function useRealtimeSpeaking() {
           apiKey: APIKey,
         });
 
-        if (!isMountedRef.current) return;
+        if (!mountedRef.current) return;
 
-        setMessages((prev) => [...prev, { role: 'ai', content: reply }]);
+        dispatch({
+          type: "MESSAGES",
+          message: { role: 'ai', content: reply }
+        });
 
-        // 🔊 AI SPEAKING
         dispatch({ type: 'AI_START' });
-        (globalThis as any).isAISpeaking = true;
 
         await window.audio.resetBuffer();
-        await playTTS(reply, baseLanguage);
-
-        // 🔓 AI DONE → MIC ON AGAIN
-        (globalThis as any).isAISpeaking = false;
+        await playTTS(reply);
         await window.audio.resetBuffer();
 
         dispatch({ type: 'AI_END' });
       } catch (err) {
         console.error(err);
         dispatch({ type: 'ERROR' });
+      } finally {
+        handlingRef.current = false;
       }
     },
-    [aiProvider, aiModel, speakingLanguage, APIKey, stopMic, dispatch]
+    [
+      aiProvider,
+      aiModel,
+      speakingLanguage,
+      APIKey,
+      stopMic,
+      dispatch,
+    ]
   );
 
-  // =========================
-  // STATE → SIDE EFFECT
-  // =========================
   useEffect(() => {
-    if (store.state === 'listening') {
-      window.ai.onWhisperText(handleWhisperText);
-      startMic();
-    }
+    const unsubscribe = window.ai.onWhisperText(handleWhisperText);
 
-    if (store.state === 'idle' || store.state === 'processing' || store.state === 'ai_speaking') {
+    return () => {
+      unsubscribe();
+    };
+  }, [handleWhisperText]);
+
+  useEffect(() => {
+    if (!mountedRef.current) return;
+
+    if (store.state === 'listening') {
+      startMic();
+    } else {
       stopMic();
     }
-  }, [store.state, startMic, stopMic, handleWhisperText]);
+  }, [store.state, startMic, stopMic]);
 
   useEffect(() => {
     return () => {
-      isMountedRef.current = false;
+      mountedRef.current = false;
       stopMic();
     };
   }, [stopMic]);
@@ -123,6 +139,5 @@ export function useRealtimeSpeaking() {
     start: () => dispatch({ type: 'START' }),
     stop: () => dispatch({ type: 'STOP' }),
     listening,
-    messages
-  };
+    messages: store.messages,};
 }

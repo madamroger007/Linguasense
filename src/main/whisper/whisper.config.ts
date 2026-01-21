@@ -12,7 +12,7 @@ export const WHISPER_CONFIG = {
   modelPath: getResourcePath(
     'whisper',
     'models',
-    'ggml-small.bin'
+    'ggml-medium-q8_0.bin'
   ),
 
   language: 'auto',

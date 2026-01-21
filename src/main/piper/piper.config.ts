@@ -1,23 +1,11 @@
-import { getResourcePath } from '../utils/resourcePath';
+import path from 'path';
 
-const isWin = process.platform === 'win32';
+const PIPER_ROOT = path.resolve(__dirname, '..', '..', 'resources', 'piper');
 
 export const PIPER_CONFIG = {
-  binary: getResourcePath(
-    'piper',
-    isWin ? 'piper.exe' : 'piper'
-  ),
-
+  binary: path.join(PIPER_ROOT, 'piper'),
   env: {
-    ...(process.platform === 'linux'
-      ? {
-          LD_LIBRARY_PATH: getResourcePath('piper'),
-        }
-      : {}),
-
-    ESPEAK_DATA_PATH: getResourcePath(
-      'piper',
-      'espeak-ng-data'
-    ),
+    LD_LIBRARY_PATH: PIPER_ROOT,
+    ESPEAK_DATA_PATH: path.join(PIPER_ROOT, 'espeak-ng-data'),
   },
 };
