@@ -10,28 +10,13 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { Input } from '../components/ui/input';
-import { useSettings } from '../state/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 import { AI_CATALOG } from '../../../../shared/utils/aiCatalog';
-import { LANGUAGES } from '../../../../shared/utils/language';
+import { AIProvider } from 'src/shared/types/aiprovider';
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
-  const {
-    fontSize,
-    setFontSize,
-    dailyReminders,
-    setDailyReminders,
-    autoRun,
-    setAutoRun,
-    aiModel,
-    setAiModel,
-    aiProvider,
-    setAiProvider,
-    APIKey,
-    setAPIKey,
-    baseLanguage,
-    setBaseLanguage,
-  } = useSettings();
+const { state, dispatch } = useSettings();
 
   return (
     <div className="p-4 md:p-6 lg:p-8 pb-20 md:pb-6">
@@ -61,11 +46,11 @@ export default function Settings() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="font-medium">Font Size</p>
-                  <span className="text-sm text-muted-foreground">{fontSize}px</span>
+                  <span className="text-sm text-muted-foreground">{state.fontSize}px</span>
                 </div>
                 <Slider
-                  value={[fontSize]}
-                  onValueChange={(value) => setFontSize(value[0])}
+                  value={[state.fontSize]}
+                  onValueChange={(value) => dispatch({ type: 'SET_FONT_SIZE', payload: value[0] })}
                   min={12}
                   max={24}
                   step={1}
@@ -85,27 +70,6 @@ export default function Settings() {
           <Card className="p-6">
             <h3 className="text-xl mb-4">Learning Preferences</h3>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Select Base Language
-                </label>
-                <Select value={baseLanguage} onValueChange={setBaseLanguage}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select Base Language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGES.map(({ id, label }) => (
-                      <SelectItem key={id} value={id}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <p className="text-xs text-muted-foreground mt-2">
-                  Choose your preferred AI assistant for language tutoring
-                </p>
-              </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Daily Reminders</p>
@@ -114,8 +78,8 @@ export default function Settings() {
                   </p>
                 </div>
                 <Switch
-                  checked={dailyReminders}
-                  onCheckedChange={setDailyReminders}
+                  checked={state.dailyReminders}
+                  onCheckedChange={(value) => dispatch({ type: 'SET_DAILY_REMINDERS', payload: value })}
                 />
               </div>
 
@@ -127,8 +91,8 @@ export default function Settings() {
                   </p>
                 </div>
                 <Switch
-                  checked={autoRun}
-                  onCheckedChange={setAutoRun}
+                  checked={state.autoRun}
+                  onCheckedChange={(value) => dispatch({ type: 'SET_AUTO_RUN', payload: value })}
                 />
               </div>
             </div>
@@ -141,7 +105,7 @@ export default function Settings() {
                 <label className="block text-sm font-medium mb-2">
                   Select AI Provider
                 </label>
-                <Select value={aiProvider} onValueChange={setAiProvider}>
+                <Select value={state.aiProvider} onValueChange={(value) => dispatch({ type: 'SET_AI_PROVIDER', payload: value as AIProvider })}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select AI provider" />
                   </SelectTrigger>
@@ -155,19 +119,19 @@ export default function Settings() {
                 </Select>
 
                 <p className="text-xs text-muted-foreground mt-2">
-                  Choose your preferred AI assistant for language tutoring
+                  Choose your preferred AI assistant for language tutoring  <a className='text-blue-500' href={AI_CATALOG[state.aiProvider].docs} target="_blank" rel="noopener noreferrer">Documentation</a>
                 </p>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Select AI Model
                 </label>
-                <Select value={aiModel} onValueChange={setAiModel}>
+                <Select value={state.aiModel} onValueChange={(value) => dispatch({ type: 'SET_AI_MODEL', payload: value })}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select AI model" />
                   </SelectTrigger>
                   <SelectContent>
-                    {AI_CATALOG[aiProvider].models.map((model) => (
+                    {AI_CATALOG[state.aiProvider].models.map((model) => (
                       <SelectItem key={model.id} value={model.id}>
                         {model.label}
                       </SelectItem>
@@ -179,16 +143,30 @@ export default function Settings() {
                   Choose your preferred AI assistant for language tutoring
                 </p>
               </div>
-              {AI_CATALOG[aiProvider].requiresApiKey && (
+              {AI_CATALOG[state.aiProvider].requiresApiKey && (
                 <div>
                   <Input
                     type="password"
-                    value={APIKey}
-                    onChange={(e) => setAPIKey(e.target.value)}
+                    value={state.apiKey}
+                    onChange={(e) => dispatch({ type: 'SET_API_KEY', payload: e.target.value })}
                     placeholder="Enter API Key"
                   />
                   <p className="text-xs text-muted-foreground mt-2">
-                    API key required for {AI_CATALOG[aiProvider].label}
+                    API key required for {AI_CATALOG[state.aiProvider].label}
+                  </p>
+                </div>
+              )}
+
+              {AI_CATALOG[state.aiProvider].requiresUrl && (
+                <div>
+                  <Input
+                    type="text"
+                    value={state.url}
+                    onChange={(e) => dispatch({ type: 'SET_URL', payload: e.target.value })}
+                    placeholder="Example URL (http://127.0.0.1:1234/v1)"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    URL required for {AI_CATALOG[state.aiProvider].label}
                   </p>
                 </div>
               )}

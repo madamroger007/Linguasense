@@ -1,26 +1,41 @@
-export function playTTS(text: string): Promise<void> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const { audio, mime } = await window.ai.tts(text);
+let currentAudio: HTMLAudioElement | null = null;
 
-      const blob = new Blob([new Uint8Array(audio)], { type: mime });
-      const url = URL.createObjectURL(blob);
+export async function playTTS(text: string): Promise<void> {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.src = '';
+    currentAudio = null;
+  }
 
-      const audioEl = new Audio(url);
+  const { audio, mime } = await window.ai.tts(text);
 
-      audioEl.onended = () => {
-        URL.revokeObjectURL(url);
-        resolve();
-      };
+  const blob = new Blob([new Uint8Array(audio)], { type: mime });
+  const url = URL.createObjectURL(blob);
 
-      audioEl.onerror = (e) => {
-        URL.revokeObjectURL(url);
-        reject(e);
-      };
+  const audioEl = new Audio(url);
+  currentAudio = audioEl;
 
-      await audioEl.play();
-    } catch (err) {
-      reject(err);
+  audioEl.onended = () => {
+    URL.revokeObjectURL(url);
+    if (currentAudio === audioEl) {
+      currentAudio = null;
     }
-  });
+  };
+
+  audioEl.onerror = () => {
+    URL.revokeObjectURL(url);
+    if (currentAudio === audioEl) {
+      currentAudio = null;
+    }
+  };
+
+  await audioEl.play();
+}
+
+export function stopTTS() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.src = '';
+    currentAudio = null;
+  }
 }

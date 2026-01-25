@@ -1,8 +1,8 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from 'next-themes';
 import { useEffect } from 'react';
-import { SettingsProvider } from './state/SettingsContext';
-import { SpeakingProvider } from './state/SpeakingContext';
+import { SettingsProvider } from './context/SettingsContext';
+import { SpeakingProvider } from './context/SpeakingContext';
 import {
   DesktopSidebar,
   TabletHeader,

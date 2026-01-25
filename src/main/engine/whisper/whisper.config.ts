@@ -1,4 +1,4 @@
-import { getResourcePath } from '../utils/resourcePath';
+import { getResourcePath } from '../../utils/resourcePath';
 
 const isWin = process.platform === 'win32';
 
@@ -12,7 +12,7 @@ export const WHISPER_CONFIG = {
   modelPath: getResourcePath(
     'whisper',
     'models',
-    'ggml-medium-q8_0.bin'
+    'ggml-large-v3-turbo.bin'
   ),
 
   language: 'auto',

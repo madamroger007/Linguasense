@@ -9,13 +9,13 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { Label } from '../components/ui/label';
-import { useSettings } from '../state/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 import { useRealtimeSpeaking } from '../hooks/speaking/useRealtimeSpeaking';
-import { useSpeaking } from '../state/SpeakingContext';
+import { useSpeaking } from '../context/SpeakingContext';
 import { LANGUAGES } from '../../../../shared/utils/language';
 
 export default function Speaking() {
-  const { speakingLanguage, setSpeakingLanguage } = useSettings();
+  const { state, dispatch } = useSettings();
   const { start, stop, listening, messages } =
     useRealtimeSpeaking();
   const { store } = useSpeaking();
@@ -24,12 +24,12 @@ export default function Speaking() {
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl md:text-4xl mb-6">Speaking Practice</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1  gap-6">
 
           <Card className="p-6 flex flex-col items-center">
             <div className='w-full'>
-              <Label htmlFor="language-select" className='my-2 text-base'>Learn Language</Label>
-              <Select value={speakingLanguage} onValueChange={setSpeakingLanguage}>
+              <Label htmlFor="language-select" className='my-2 text-base'>Response Language</Label>
+              <Select value={state.speakingLanguage} onValueChange={(value) => dispatch({ type: 'SET_SPEAKING_LANGUAGE', payload: value })}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>

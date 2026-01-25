@@ -11,6 +11,7 @@ export interface AIRequest {
   language: string;
   model: string;
   apiKey: string;
+  url: string;
 }
 
 export interface AIResponse {
