@@ -13,13 +13,11 @@ import {
 import { LANGUAGES } from '../../../../shared/utils/language';
 import { useReadingArticle } from '../hooks/reading/useReadingArticle';
 
-
 const readingLevels = [
   { level: 'Beginner', color: 'bg-green-500' },
   { level: 'Intermediate', color: 'bg-yellow-500' },
   { level: 'Advanced', color: 'bg-red-500' },
 ];
-
 
 export default function Reading() {
  const {
@@ -40,10 +38,6 @@ export default function Reading() {
     <div className="p-4 md:p-6 lg:p-8 pb-20 md:pb-6">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl md:text-4xl mb-6">Reading Practice</h1>
-
-        {/* =========================
-            LEVEL SELECTION
-        ========================= */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {readingLevels.map(item => (
             <Card
@@ -63,15 +57,11 @@ export default function Reading() {
           ))}
         </div>
 
-        {/* =========================
-            READING CARD
-        ========================= */}
         <Card className="p-6">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
             <h3 className="text-xl">Daily Article</h3>
 
             <div className="flex flex-wrap gap-4">
-              {/* Language */}
               <div className="flex items-center gap-2">
                 <Label className="text-base">Language</Label>
                 <Select
@@ -91,7 +81,6 @@ export default function Reading() {
                 </Select>
               </div>
 
-              {/* AI Read */}
               <div className="flex items-center gap-2">
                 <Label>AI Read</Label>
                 <Switch checked={micEnabled} onCheckedChange={setMicEnabled} />
@@ -99,7 +88,6 @@ export default function Reading() {
             </div>
           </div>
 
-          {/* Article */}
           <div className="prose dark:prose-invert max-w-none min-h-[120px]">
             {loadingArticle ? (
               <p className="opacity-60">Generating article...</p>
@@ -110,7 +98,6 @@ export default function Reading() {
             )}
           </div>
 
-          {/* Actions */}
           <div className="mt-6 flex gap-3">
             <Button onClick={generateNewArticle} disabled={loadingArticle}>
               New Article

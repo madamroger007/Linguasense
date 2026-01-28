@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import {
@@ -9,101 +8,133 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
+import { LANGUAGES } from '../../../../shared/utils/language';
+import { useWriting } from '../hooks/writing/useWriting';
 
 export default function Writing() {
-  const [sourceLanguage, setSourceLanguage] = useState('english');
-  const [targetLanguage, setTargetLanguage] = useState('spanish');
-  const [text, setText] = useState('');
-  const [feedback, setFeedback] = useState<string[]>([]);
+  const {
+    fromLanguage,
+    toLanguage,
+    setFromLanguage,
+    setToLanguage,
 
-  const handleAnalyze = () => {
-    setFeedback([
-      '✓ Great use of vocabulary!',
-      '⚠ Consider using "furthermore" instead of "also" for formal writing',
-      '✓ Excellent sentence structure',
-      '⚠ Minor grammar: "was" should be "were" in the second paragraph',
-    ]);
-  };
+    descriptionText,
+    loadingDescription,
+    generateDescription,
+
+    userWriting,
+    setUserWriting,
+    clearWriting,
+
+    feedback,
+    loadingFeedback,
+    analyzeWriting,
+  } = useWriting();
 
   return (
     <div className="p-4 md:p-6 lg:p-8 pb-20 md:pb-6">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl md:text-4xl mb-6">Writing Practice</h1>
 
-        {/* Language Selection */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
-            <label className="block text-sm mb-2">Source Language</label>
-            <Select value={sourceLanguage} onValueChange={setSourceLanguage}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select language" />
+            <label className="block text-sm mb-2">From Language</label>
+            <Select value={fromLanguage} onValueChange={setFromLanguage}>
+              <SelectTrigger className="w-52">
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="english">English</SelectItem>
-                <SelectItem value="spanish">Spanish</SelectItem>
-                <SelectItem value="french">French</SelectItem>
-                <SelectItem value="german">German</SelectItem>
+                {LANGUAGES.map(l => (
+                  <SelectItem key={l.id} value={l.id}>
+                    {l.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
+
           <div>
-            <label className="block text-sm mb-2">Target Language</label>
-            <Select value={targetLanguage} onValueChange={setTargetLanguage}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select language" />
+            <label className="block text-sm mb-2">To Language</label>
+            <Select value={toLanguage} onValueChange={setToLanguage}>
+              <SelectTrigger className="w-52">
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="spanish">Spanish</SelectItem>
-                <SelectItem value="english">English</SelectItem>
-                <SelectItem value="french">French</SelectItem>
-                <SelectItem value="german">German</SelectItem>
+                {LANGUAGES.map(l => (
+                  <SelectItem key={l.id} value={l.id}>
+                    {l.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6">
+          {/* Description */}
+          <Card className="w-full p-6 h-fit">
+            <h3 className="text-lg mb-2">Translate Writing Language</h3>
+            <div className="p-4 bg-accent/10 rounded-lg min-h-[140px]">
+              {loadingDescription ? (
+                <p className="opacity-60">Generating text...</p>
+              ) : (
+                <p className="text-justify whitespace-pre-line">
+                  {descriptionText ||
+                    'Click "Generate Text" to get a writing task.'}
+                </p>
+              )}
+            </div>
+            <div className="mt-4">
+              <Button onClick={generateDescription} disabled={loadingDescription}>
+                Generate Text
+              </Button>
+            </div>
+          </Card>
+
           {/* Writing Area */}
           <Card className="lg:col-span-2 p-6">
             <h3 className="text-lg mb-4">Your Writing</h3>
             <Textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Start writing here..."
-              className="min-h-[300px] md:min-h-[400px] resize-none"
+              value={userWriting}
+              onChange={e => setUserWriting(e.target.value)}
+              placeholder="Write your translation here..."
+              className="min-h-[300px] resize-none"
             />
             <div className="mt-4 flex gap-3">
-              <Button onClick={handleAnalyze}>Get AI Feedback</Button>
-              <Button variant="outline">Clear</Button>
-              <Button variant="outline">Save Draft</Button>
+              <Button onClick={analyzeWriting} disabled={loadingFeedback}>
+                Get AI Feedback
+              </Button>
+              <Button variant="outline" onClick={clearWriting}>
+                Clear
+              </Button>
             </div>
           </Card>
 
-          {/* AI Feedback */}
-          <Card className="p-6 h-fit lg:sticky lg:top-6">
-            <h3 className="text-lg mb-4">AI Suggestions</h3>
-            {feedback.length > 0 ? (
+          {/* Feedback */}
+          <Card className="p-6 h-fit">
+            <h3 className="text-lg mb-4">AI Feedback</h3>
+
+            {feedback ? (
               <div className="space-y-3">
-                {feedback.map((item, index) => (
-                  <div
-                    key={index}
-                    className="p-3 bg-secondary rounded-lg text-sm"
-                  >
-                    {item}
+                {feedback.suggestions.map((s, i) => (
+                  <div key={i} className="p-3 bg-secondary rounded-lg text-sm">
+                    {s}
                   </div>
                 ))}
+
                 <div className="mt-6 p-4 bg-accent/10 rounded-lg">
                   <p className="font-medium mb-2">Overall Score</p>
-                  <div className="text-3xl font-semibold text-accent">85/100</div>
+                  <div className="text-3xl font-semibold text-accent">
+                    {feedback.score}/100
+                  </div>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Good work! Focus on formal transitions.
+                    {feedback.summary}
                   </p>
                 </div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Write something and click "Get AI Feedback" to receive
-                suggestions.
+                Write your translation and click “Get AI Feedback”.
               </p>
             )}
           </Card>

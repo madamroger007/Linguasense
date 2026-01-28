@@ -4,10 +4,6 @@ import { useSettings } from '../../context/SettingsContext';
 import { buildArticlePrompt } from '../../../../../shared/model/prompts/reading';
 export function useReadingArticle() {
   const { state: settings } = useSettings();
-
-  // =========================
-  // UI STATE
-  // =========================
   const [selectedLevel, setSelectedLevel] = useState('Intermediate');
   const [speakingLanguage, setSpeakingLanguage] = useState('en_US');
   const [micEnabled, setMicEnabled] = useState(false);
@@ -24,6 +20,7 @@ export function useReadingArticle() {
     playTTS(textToRead);
     return () => {
       window.ai.stopTTS();
+      stopTTS();
     };
   }, [micEnabled, textToRead]);
 
@@ -62,9 +59,6 @@ export function useReadingArticle() {
     settings.url,
   ]);
 
-  // =========================
-  // PUBLIC API
-  // =========================
   return {
     selectedLevel,
     speakingLanguage,
