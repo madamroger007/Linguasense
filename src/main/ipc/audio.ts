@@ -4,8 +4,8 @@ import {
   consumeAudio,
   isSpeechFinished,
   resetAudioBuffer
-} from '../whisper/whisper.stream';
-import { transcribePCM } from '../whisper/whisper.service';
+} from '../engine/whisper/whisper.stream';
+import { transcribePCM } from '../engine/whisper/whisper.service';
 
 let processing = false;
 let lastTranscribeAt = 0;
@@ -13,18 +13,12 @@ let lastTranscribeAt = 0;
 const TRANSCRIBE_COOLDOWN_MS = 1200;
 
 ipcMain.on('audio:chunk', async (_, chunk) => {
-  // ✅ SELALU push audio (update lastSoundAt)
   pushAudioChunk(chunk);
-
-  // 🔒 block processing saat AI bicara
   if ((global as any).isAISpeaking) return;
-
   if (processing) return;
   if (!isSpeechFinished()) return;
-
   const now = Date.now();
   if (now - lastTranscribeAt < TRANSCRIBE_COOLDOWN_MS) return;
-
   const audio = consumeAudio();
   if (!audio) return;
 

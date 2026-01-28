@@ -4,7 +4,7 @@ import path from 'path';
 import os from 'os';
 import { PIPER_CONFIG } from './piper.config';
 
-export async function speakWithPiper(text: string): Promise<string> {
+export async function speakWithPiper(text: string, model: string): Promise<string> {
   const outFile = path.join(
     os.tmpdir(),
     `piper-${Date.now()}.wav`
@@ -21,7 +21,7 @@ export async function speakWithPiper(text: string): Promise<string> {
       PIPER_CONFIG.binary,
       [
         '--model',
-        PIPER_CONFIG.model,
+        model,
         '--output_file',
         outFile,
       ],

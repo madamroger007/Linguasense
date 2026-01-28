@@ -11,6 +11,9 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
   - resources/**
+
+afterPack: scripts/afterPack.cjs
+
 win:
   executableName: linguasense
 nsis:

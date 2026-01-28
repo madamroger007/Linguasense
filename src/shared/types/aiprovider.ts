@@ -1,9 +1,8 @@
 export type AIProvider =
-  | 'openai'
   | 'lmstudio'
+  | 'openai'
   | 'llma3'
   | 'claude'
-  | 'grok'
   | 'gemini'
   | 'deepseek';
 
@@ -12,6 +11,7 @@ export interface AIRequest {
   language: string;
   model: string;
   apiKey: string;
+  url: string;
 }
 
 export interface AIResponse {

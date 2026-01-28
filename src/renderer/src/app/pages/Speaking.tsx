@@ -8,46 +8,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-
-import { useSettings } from '../state/SettingsContext';
+import { Label } from '../components/ui/label';
+import { useSettings } from '../context/SettingsContext';
 import { useRealtimeSpeaking } from '../hooks/speaking/useRealtimeSpeaking';
+import { useSpeaking } from '../context/SpeakingContext';
+import { LANGUAGES } from '../../../../shared/utils/language';
 
 export default function Speaking() {
-  const { speakingLanguage, setSpeakingLanguage } = useSettings();
-  const { start, stop, listening, messages, loading } =
+  const { state, dispatch } = useSettings();
+  const { start, stop, listening, messages } =
     useRealtimeSpeaking();
-
+  const { store } = useSpeaking();
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl md:text-4xl mb-6">Speaking Practice</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* MIC */}
-          <Card className="p-6 flex flex-col items-center">
-            <Select value={speakingLanguage} onValueChange={setSpeakingLanguage}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="japanese">Japanese</SelectItem>
-                <SelectItem value="mandarin">Chinese (Mandarin)</SelectItem>
-                <SelectItem value="english-uk">English (British)</SelectItem>
-                <SelectItem value="english-us">English (US)</SelectItem>
-                <SelectItem value="indonesian">Indonesian</SelectItem>
-                <SelectItem value="german">German</SelectItem>
-                <SelectItem value="italian">Italian</SelectItem>
-                <SelectItem value="korean">Korean</SelectItem>
-                <SelectItem value="arabic">Arabic</SelectItem>
-                <SelectItem value="spanish">Spanish</SelectItem>
-                <SelectItem value="french">French</SelectItem>
-                <SelectItem value="portuguese">Portuguese</SelectItem>
-                <SelectItem value="dutch">Dutch</SelectItem>
-                <SelectItem value="russian">Russian</SelectItem>
-                <SelectItem value="hindi">Hindi</SelectItem>
-              </SelectContent>
-            </Select>
+        <div className="grid grid-cols-1  gap-6">
 
+          <Card className="p-6 flex flex-col items-center">
+            <div className='w-full'>
+              <Label htmlFor="language-select" className='my-2 text-base'>Response Language</Label>
+              <Select value={state.speakingLanguage} onValueChange={(value) => dispatch({ type: 'SET_SPEAKING_LANGUAGE', payload: value })}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANGUAGES.map(({ id, label }) => (
+                    <SelectItem key={id} value={label}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <motion.button
               onClick={listening ? stop : start}
               className={`w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center transition-all ${listening
@@ -74,12 +68,12 @@ export default function Speaking() {
               </div>
             ))}
 
-            {loading && <p className="opacity-60">AI thinking…</p>}
+            {store.loading && <p className="opacity-60">AI thinking…</p>}
 
 
           </Card>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

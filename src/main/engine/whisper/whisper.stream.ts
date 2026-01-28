@@ -1,4 +1,4 @@
-import { AudioChunk } from '../../shared/types/audio';
+import { AudioChunk } from '../../../shared/types/audio';
 
 let buffer: Float32Array[] = [];
 let lastSoundAt = 0;

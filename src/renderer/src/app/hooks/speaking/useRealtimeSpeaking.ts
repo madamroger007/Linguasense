@@ -1,169 +1,105 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSettings } from '../../state/SettingsContext';
-import { speakingPrompt } from '../../../../../shared/model/prompts/speaking';
-import { getMicrophoneStream } from './useMicrophone';
-import { startAudioChunking } from './useAudioChunk';
-import { playTTS } from '../../../utils/text_speech';
-
-type Message = {
-  role: 'user' | 'ai';
-  content: string;
-};
+import { useCallback, useEffect, useRef } from 'react';
+import { useSettings } from '../../context/SettingsContext';
+import { useSpeaking } from '../../context/SpeakingContext';
+import { getMicrophoneStream } from '../audio/useMicrophone';
+import { startAudioChunking } from '../audio/useAudioChunk';
+import { playTTS, stopTTS } from '../../../utils/text_speech';
 
 export function useRealtimeSpeaking() {
-  const { aiProvider, aiModel, speakingLanguage, APIKey } = useSettings();
-
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'ai',
-      content: speakingPrompt(speakingLanguage),
-    },
-  ]);
-
-  const [loading, setLoading] = useState(false);
-  const [listening, setListening] = useState(false);
-
+  const { state: stateSettings } = useSettings();
+  const { store, dispatch } = useSpeaking();
   const stopChunkingRef = useRef<null | (() => void)>(null);
-  const isMountedRef = useRef(true);
-  const isAISpeakingRef = useRef(false);
+  const isMicActiveRef = useRef(false);
+  const listening = store.state === 'listening';
 
-  // =========================
-  // Reset greeting on language change
-  // =========================
-  useEffect(() => {
-    setMessages([
-      {
-        role: 'ai',
-        content: speakingPrompt(speakingLanguage),
-      },
-    ]);
-  }, [speakingLanguage]);
-
-  // =========================
-  // Handle text from Whisper (MAIN)
-  // =========================
-  const handleWhisperText = useCallback(
-    async (spokenText: string) => {
-      if (!spokenText || isAISpeakingRef.current || !isMountedRef.current) {
-        console.log('[VOICE] Ignored input, AI is speaking');
-        return;
-      }
-      // tampilkan user text
-      setMessages((prev) => [
-        ...prev,
-        { role: 'user', content: spokenText },
-      ]);
-
-      setLoading(true);
-
-      try {
-        // =========================
-        // 1. AI RESPONSE (TEXT)
-        // =========================
-        const reply = await window.ai.speak({
-          provider: aiProvider,
-          model: aiModel,
-          language: speakingLanguage,
-          message: spokenText,
-          apiKey: APIKey,
-        });
-
-        if (!isMountedRef.current) return;
-
-        setMessages((prev) => [
-          ...prev,
-          { role: 'ai', content: reply },
-        ]);
-
-        // =========================
-        // 2. TEXT → SPEECH (PIPER)
-        // =========================
-        // stop mic supaya tidak feedback
-        isAISpeakingRef.current = true;
-        window.audio.stop();
-        await window.audio.resetBuffer();
-        // =========================
-        // 3. TEXT → SPEECH (WAIT!)
-        // =========================
-        await playTTS(reply);
-
-        // =========================
-        // 4. UNLOCK + RESUME MIC
-        // =========================
-        isAISpeakingRef.current = false;
-        await window.audio.resetBuffer();
-        if (isMountedRef.current) {
-          window.audio.start();
-        }
-
-      } catch (err) {
-        console.error(err);
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: 'ai',
-            content: '⚠️ Sorry, something went wrong.',
-          },
-        ]);
-
-        // lanjutkan mic setelah AI selesai bicara
-        isAISpeakingRef.current = false;
-        window.audio.start();
-      } finally {
-
-        setLoading(false);
-      }
-    },
-    [aiProvider, aiModel, speakingLanguage, APIKey]
-  );
-
-  // =========================
-  // START CALL
-  // =========================
-  const start = useCallback(async () => {
-    if (listening) return;
+  const startMic = useCallback(async () => {
+    if (isMicActiveRef.current) return;
 
     const stream = await getMicrophoneStream();
 
-    window.ai.onWhisperText(handleWhisperText);
+    stopChunkingRef.current = startAudioChunking(stream, (chunk) => {
+      window.audio.sendChunk(chunk);
+    });
 
-    stopChunkingRef.current = startAudioChunking(
-      stream,
-      (chunk) => {
-        window.audio.sendChunk(chunk);
-      }
-    );
+    isMicActiveRef.current = true;
+  }, []);
 
-    window.audio.start();
-    setListening(true);
-  }, [handleWhisperText, listening]);
+  const stopMic = useCallback(() => {
+    if (!isMicActiveRef.current) return;
 
-  // =========================
-  // STOP CALL
-  // =========================
-  const stop = useCallback(() => {
     stopChunkingRef.current?.();
     stopChunkingRef.current = null;
 
-    window.audio.stop();
-    setListening(false);
+    window.ai.stopTTS();
+    stopTTS();
+    isMicActiveRef.current = false;
+
   }, []);
 
-  // =========================
-  // CLEANUP
-  // =========================
+  const handleWhisperText = useCallback(
+    async (spokenText: string) => {
+      if (!spokenText) return;
+
+      dispatch({ type: 'PROCESSING' });
+
+      try {
+        dispatch({
+          type: 'MESSAGES',
+          message: { role: 'user', content: spokenText },
+        });
+
+        const reply = await window.ai.speak({
+          provider: stateSettings.aiProvider,
+          request: {
+            model: stateSettings.aiModel,
+            language: stateSettings.speakingLanguage,
+            message: spokenText,
+            apiKey: stateSettings.apiKey,
+            url: stateSettings.url,
+          }
+        });
+
+        dispatch({
+          type: 'MESSAGES',
+          message: { role: 'ai', content: reply },
+        });
+
+        dispatch({ type: 'AI_START' });
+
+        await window.audio.resetBuffer();
+        await playTTS(reply);
+        await window.audio.resetBuffer();
+
+        dispatch({ type: 'AI_END' });
+
+      } catch (err) {
+        dispatch({ type: 'ERROR' });
+      }
+    },
+    [stateSettings.aiProvider, stateSettings.aiModel, stateSettings.speakingLanguage, stateSettings.apiKey, stateSettings.url, dispatch]
+  );
+
   useEffect(() => {
+    const unsubscribe = window.ai.onWhisperText(handleWhisperText);
+    return unsubscribe;
+  }, [handleWhisperText]);
+
+  useEffect(() => {
+    if (listening) {
+      startMic();
+    } else {
+      stopMic();
+    }
+
     return () => {
-      isMountedRef.current = false;
-      stop();
+      stopMic();
     };
-  }, [stop]);
+  }, [listening, startMic, stopMic]);
 
   return {
-    start,
-    stop,
+    start: () => dispatch({ type: 'START' }),
+    stop: () => dispatch({ type: 'STOP' }),
     listening,
-    messages,
-    loading,
+    messages: store.messages,
   };
 }

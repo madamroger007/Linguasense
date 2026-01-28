@@ -2,13 +2,9 @@ import { contextBridge, ipcRenderer } from 'electron';
 import { AudioChunk } from '../shared/types/audio';
 
 contextBridge.exposeInMainWorld('audio', {
-  start: () => ipcRenderer.send('audio:start'),
-  stop: () => ipcRenderer.send('audio:stop'),
   sendChunk: (chunk: AudioChunk) =>
     ipcRenderer.send('audio:chunk', chunk),
   resetBuffer: () => ipcRenderer.invoke('audio:reset'),
-
-
 });
 
 contextBridge.exposeInMainWorld('ai', {
@@ -16,11 +12,15 @@ contextBridge.exposeInMainWorld('ai', {
     ipcRenderer.invoke('ai:speak', payload),
 
   onWhisperText: (cb: (text: string) => void) => {
-    ipcRenderer.on('ai:text', (_, text) => cb(text));
-  }
-});
+    const listener = (_: any, text: string) => cb(text);
+    ipcRenderer.on('ai:text', listener);
+    return () => {
+      ipcRenderer.removeListener('ai:text', listener);
+    };
+  },
 
-contextBridge.exposeInMainWorld('tts', {
-  speak: (text: string) =>
-    ipcRenderer.invoke('tts:speak', text),
+  tts: (text: string, baseLanguage: string) =>
+    ipcRenderer.invoke('ai:tts', text, baseLanguage),
+  stopTTS: () =>
+    ipcRenderer.send('ai:tts:stop'),
 });

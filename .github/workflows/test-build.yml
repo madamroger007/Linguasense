@@ -2,7 +2,7 @@ name: Test Electron Build
 
 on:
   push:
-    branches: ['main', 'dev']
+    branches: ['main', 'develop']
   pull_request:
   workflow_dispatch:
 
@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
 
     env:
       CI: true
