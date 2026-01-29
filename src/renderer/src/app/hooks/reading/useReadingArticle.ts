@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { playTTS, stopTTS } from '../../../utils/text_speech';
 import { useSettings } from '../../context/SettingsContext';
 import { buildArticlePrompt } from '../../../../../shared/model/prompts/reading';
+import { setGlobalError } from '@renderer/app/reducer/store/error';
+import { mapError } from '@renderer/utils/error';
 export function useReadingArticle() {
   const { state: settings } = useSettings();
   const [selectedLevel, setSelectedLevel] = useState('Intermediate');
@@ -46,7 +48,8 @@ export function useReadingArticle() {
 
       setTextToRead(article);
     } catch (error) {
-      console.error('[reading] failed to generate article', error);
+      const appError = mapError(error);
+      setGlobalError(appError);
     } finally {
       setLoadingArticle(false);
     }

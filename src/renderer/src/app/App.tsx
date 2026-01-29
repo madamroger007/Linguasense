@@ -14,6 +14,7 @@ import Speaking from './pages/Speaking';
 import Reading from './pages/Reading';
 import Writing from './pages/Writing';
 import Settings from './pages/Settings';
+import { GlobalErrorBanner } from './components/alert/error';
 
 function Layout({ children }: { children: React.ReactNode }) {
   // Initialize global font size from localStorage
@@ -45,6 +46,7 @@ export default function App() {
         <SettingsProvider>
           <HashRouter>
             <Layout>
+              <GlobalErrorBanner />
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/speaking" element={<Speaking />} />

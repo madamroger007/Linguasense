@@ -4,6 +4,8 @@ import { useSpeaking } from '../../context/SpeakingContext';
 import { getMicrophoneStream } from '../audio/useMicrophone';
 import { startAudioChunking } from '../audio/useAudioChunk';
 import { playTTS, stopTTS } from '../../../utils/text_speech';
+import { mapError } from '@renderer/utils/error';
+import { setGlobalError } from '@renderer/app/reducer/store/error';
 
 export function useRealtimeSpeaking() {
   const { state: stateSettings } = useSettings();
@@ -73,7 +75,8 @@ export function useRealtimeSpeaking() {
         dispatch({ type: 'AI_END' });
 
       } catch (err) {
-        dispatch({ type: 'ERROR' });
+        const appError = mapError(err);
+        setGlobalError(appError);
       }
     },
     [stateSettings.aiProvider, stateSettings.aiModel, stateSettings.speakingLanguage, stateSettings.apiKey, stateSettings.url, dispatch]
