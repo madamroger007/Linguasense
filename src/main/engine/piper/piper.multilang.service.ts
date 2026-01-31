@@ -53,14 +53,8 @@ export async function speakMultilang(
 
     return finalWav;
   } catch (err) {
-    if (signal?.aborted) {
-      console.log('[speakMultilang] aborted');
-    } else {
-      console.error('[speakMultilang] error', err);
-    }
     throw err;
   } finally {
-    // 🧹 cleanup temp wav files
     for (const f of wavFiles) {
       fs.unlink(f, () => {});
     }
