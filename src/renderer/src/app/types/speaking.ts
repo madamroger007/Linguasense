@@ -10,7 +10,6 @@ export type SpeakingState =
   | 'processing'
   | 'ai_speaking';
 
-
 export type SpeakingAction =
   | { type: 'START' }
   | { type: 'STOP' }

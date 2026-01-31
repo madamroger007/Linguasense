@@ -3,10 +3,8 @@ import { Action, SystemReducer, SystemState } from '../reducer/system';
 
 const initialState: SystemState = {
   speechFeatureEnabled: true,
-  translateFeatureEnabled: true,
-  selectedText: '',
   speechActive: false,
-  translateRequested: false
+
 };
 
 const SystemContext = createContext<{

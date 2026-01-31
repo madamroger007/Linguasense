@@ -31,9 +31,7 @@ declare global {
           url: string;
         };
       }): Promise<string>;
-
       onWhisperText(cb: (text: string) => void): () => void;
-
       tts(text: string): Promise<{
         audio: ArrayBuffer;
         mime: string;
@@ -42,10 +40,7 @@ declare global {
     };
     system: {
       onToggleSpeech: (cb: () => void) => () => void;
-      onTranslate: (cb: () => void) => () => void;
-      readClipboardText: () => string;
-      writeClipboardText: (text: string) => void;
-      onSetText: (cb: (text: string) => void) => () => void;
+      setAutoRun: (enable: boolean) => Promise<void>;
     };
   }
 }

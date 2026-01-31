@@ -33,8 +33,7 @@ export function settingsReducer(
 
     case 'SET_AI_MODEL':
       return { ...state, aiModel: action.payload };
-    case 'SET_TRANSLATE_LANGUAGE':
-      return { ...state, translateLanguage: action.payload };
+
     case 'SET_API_KEY':
       return { ...state, apiKey: action.payload };
 

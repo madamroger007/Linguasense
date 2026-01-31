@@ -16,5 +16,5 @@ export interface AppError {
   message: string;
   retryable: boolean;
   autoDismiss: boolean;
-  status: ErrorStatus; // 👈 KUNCI
+  status: ErrorStatus;
 }

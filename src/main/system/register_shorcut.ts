@@ -5,11 +5,7 @@ export function registerSystemShortcuts(win: BrowserWindow) {
     {
       key: 'CommandOrControl+Shift+S',
       channel: 'system:toggle-speech',
-    },
-    {
-      key: 'CommandOrControl+Shift+T',
-      channel: 'system:translate',
-    },
+    }
   ];
 
   shortcuts.forEach(({ key, channel }) => {

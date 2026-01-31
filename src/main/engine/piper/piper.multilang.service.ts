@@ -53,7 +53,6 @@ export async function speakMultilang(
 
     return finalWav;
   } catch (err) {
-    // ⛔ abort = normal flow, not error
     if (signal?.aborted) {
       console.log('[speakMultilang] aborted');
     } else {

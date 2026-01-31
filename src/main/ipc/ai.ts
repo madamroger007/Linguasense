@@ -3,18 +3,10 @@ import { speakWithAI } from '../engine/provider';
 import fs from 'fs';
 import { speakMultilang } from '../engine/piper/piper.multilang.service';
 import { speakingPrompt } from '../../shared/model/prompts/speaking';
-import { TranslatePrompt } from '../../shared/model/prompts/translate';
 
 let abortController: AbortController | null = null;
 ipcMain.handle('ai:speak', async (_, payload) => {
   return await speakWithAI(payload, speakingPrompt(payload.request.language));
-});
-
-ipcMain.handle('ai:translate', async (_, payload) => {
-  return await speakWithAI(
-    payload,
-    TranslatePrompt(payload.request.message, payload.request.language)
-  );
 });
 
 ipcMain.handle('ai:tts', async (_, text: string) => {

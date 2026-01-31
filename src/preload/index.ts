@@ -1,6 +1,5 @@
-import { clipboard, contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 import { AudioChunk } from '../shared/types/audio';
-import { text } from 'stream/consumers';
 
 contextBridge.exposeInMainWorld('audio', {
   sendChunk: (chunk: AudioChunk) =>
@@ -21,7 +20,6 @@ contextBridge.exposeInMainWorld('ai', {
       ipcRenderer.removeListener('ai:text', listener);
     };
   },
-
   tts: (text: string, baseLanguage: string) =>
     ipcRenderer.invoke('ai:tts', text, baseLanguage),
   stopTTS: () =>
@@ -35,25 +33,6 @@ contextBridge.exposeInMainWorld('system', {
       ipcRenderer.removeListener('system:toggle-speech', cb);
   },
 
-  onTranslate: (cb: () => void) => {
-    ipcRenderer.on('system:translate', cb);
-    return () =>
-      ipcRenderer.removeListener('system:translate', cb);
-  },
-
-  readClipboardText: () => clipboard.readText(),
-
-  writeClipboardText: (text: string) =>
-    ipcRenderer.send('system:write-clipboard', text),
-  onSetText: (cb: (text: string) => void) => {
-    console.log('ini preload handler text', text);
-    const listener = (_: unknown, text: string) => {
-      console.log('[preload popup] received text:', text);
-      cb(text);
-    };
-    ipcRenderer.on('system:set-text', listener);
-    return () => {
-      ipcRenderer.removeListener('system:set-text', listener);
-    };
-  },
+  setAutoRun: (enable: boolean) =>
+    ipcRenderer.invoke('system:set-auto-run', enable),
 });

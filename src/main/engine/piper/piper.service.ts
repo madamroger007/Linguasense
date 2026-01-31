@@ -41,7 +41,6 @@ export async function speakWithPiper(text: string, model: string): Promise<strin
       console.error('[PIPER]', d.toString());
     });
 
-    // 🔑 WAJIB newline
     p.stdin.write(text.trim() + '\n');
     p.stdin.end();
 

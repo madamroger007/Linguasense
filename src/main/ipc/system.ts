@@ -1,11 +1,14 @@
-import { clipboard, ipcMain } from 'electron';
-import { showTranslatePopup, pinTranslatePopup } from '../system/translate_popup';
+import { app, ipcMain } from 'electron';
 
-
-ipcMain.on('system:write-clipboard', (_, text: string) => {
-  clipboard.writeText(text);
-  showTranslatePopup(text);
-});
-ipcMain.on('popup:pin', () => {
-  pinTranslatePopup();
+ipcMain.handle('system:set-auto-run', (_event, enable: boolean) => {
+  try {
+    app.setLoginItemSettings({
+      openAtLogin: enable,
+      openAsHidden: true,
+    });
+    return { success: true };
+  } catch (err) {
+    console.error('[auto-run] failed', err);
+    return { success: false, error: String(err) };
+  }
 });

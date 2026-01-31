@@ -8,7 +8,6 @@ export interface SettingsState {
   aiModel: string;
   apiKey: string;
   url: string;
-  translateLanguage: string;
 }
 
 
@@ -20,5 +19,4 @@ export type SettingsAction =
   | { type: 'SET_AI_PROVIDER'; payload: AIProvider }
   | { type: 'SET_AI_MODEL'; payload: string }
   | { type: 'SET_API_KEY'; payload: string }
-  | { type: 'SET_URL'; payload: string }
-  | { type: 'SET_TRANSLATE_LANGUAGE'; payload: string };
+  | { type: 'SET_URL'; payload: string };

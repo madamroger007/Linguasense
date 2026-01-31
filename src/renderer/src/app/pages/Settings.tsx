@@ -13,7 +13,6 @@ import { Input } from '../components/ui/input';
 import { useSettings } from '../provider/SettingsProvider';
 import { AI_CATALOG } from '../../../../shared/utils/aiCatalog';
 import { AIProvider } from '../../../../shared/types/aiprovider';
-import { LANGUAGES } from '../../../../shared/utils/language';
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
@@ -68,21 +67,8 @@ export default function Settings() {
           </Card>
 
           <Card className="p-6">
-            <h3 className="text-xl mb-4">Learning Preferences</h3>
+            <h3 className="text-xl mb-4">Preferences</h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Daily Reminders</p>
-                  <p className="text-sm text-muted-foreground">
-                    Get notified to practice
-                  </p>
-                </div>
-                <Switch
-                  checked={state.dailyReminders}
-                  onCheckedChange={(value) => dispatch({ type: 'SET_DAILY_REMINDERS', payload: value })}
-                />
-              </div>
-
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Auto Run App</p>
@@ -94,33 +80,6 @@ export default function Settings() {
                   checked={state.autoRun}
                   onCheckedChange={(value) => dispatch({ type: 'SET_AUTO_RUN', payload: value })}
                 />
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-xl mb-4">Translate Settings</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Select language
-                </label>
-                <Select value={state.translateLanguage} onValueChange={(value) => dispatch({ type: 'SET_TRANSLATE_LANGUAGE', payload: value })}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGES.map(({ id, label }) => (
-                      <SelectItem key={id} value={label}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <p className="text-xs text-muted-foreground mt-2">
-                  Choose your preferred AI assistant for language tutoring  <a className='text-blue-500' href={AI_CATALOG[state.aiProvider].docs} target="_blank" rel="noopener noreferrer">Documentation</a>
-                </p>
               </div>
             </div>
           </Card>
@@ -159,7 +118,7 @@ export default function Settings() {
                   </SelectTrigger>
                   <SelectContent>
                     {AI_CATALOG[state.aiProvider].models.map((model) => (
-                      <SelectItem key={model.id} value={model.id}>
+                      <SelectItem key={model.id} value={model.label}>
                         {model.label}
                       </SelectItem>
                     ))}

@@ -18,12 +18,9 @@ import { GlobalErrorBanner } from './components/alert/error';
 import { SystemProvider } from './provider/SystemProvider';
 import { useSystemShortcuts } from './hooks/system/useSystemShortcuts';
 import { SystemSpeechRuntime } from './hooks/system/SystemSpeechRuntime';
-import { SystemTranslateRuntime } from './hooks/system/SystemTranslateRuntime';
-import Translate from './pages/Translate';
 
 
 function Layout({ children }: { children: React.ReactNode }) {
-  // Initialize global font size from localStorage
   useEffect(() => {
     const savedFontSize = localStorage.getItem('fontSize');
     const fontSize = savedFontSize ? parseInt(savedFontSize) : 16;
@@ -35,7 +32,6 @@ function Layout({ children }: { children: React.ReactNode }) {
       <DesktopSidebar />
       <TabletHeader />
       <TabletNavigation />
-
       <main className="lg:ml-64">
         {children}
       </main>
@@ -47,12 +43,9 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 function AppInner() {
   useSystemShortcuts();
-
   return (
     <>
-
       <SystemSpeechRuntime />
-      {/* <SystemTranslateRuntime /> */}
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -60,7 +53,6 @@ function AppInner() {
           <Route path="/reading" element={<Reading />} />
           <Route path="/writing" element={<Writing />} />
           <Route path="/settings" element={<Settings />} />
-          {/* <Route path="/translate-popup" element={<Translate/>} /> */}
         </Routes>
       </Layout>
 

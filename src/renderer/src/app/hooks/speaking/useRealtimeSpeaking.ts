@@ -37,7 +37,6 @@ export function useRealtimeSpeaking() {
       });
 
       micActiveRef.current = true;
-      console.log('[mic] started');
     } catch (err) {
       const appError = mapError(err);
       setGlobalError(appError);
@@ -59,7 +58,6 @@ export function useRealtimeSpeaking() {
     stopTTS();
 
     micActiveRef.current = false;
-    console.log('[mic] stopped');
   }, []);
 
   useEffect(() => {

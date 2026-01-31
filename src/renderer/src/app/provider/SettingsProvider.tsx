@@ -5,9 +5,10 @@ import {
   useReducer,
   ReactNode,
 } from 'react';
-
+import { mapError } from '@renderer/utils/error';
 import { SettingsState, SettingsAction } from '../types/settings';
 import { settingsReducer } from '../reducer/settings';
+import { setGlobalError } from '../store/error';
 
 const initialState: SettingsState = {
   fontSize: 16,
@@ -16,8 +17,7 @@ const initialState: SettingsState = {
   aiProvider: 'lmstudio',
   aiModel: 'OpenAI 20B',
   apiKey: 'empty',
-  url: 'http://localhost:1234/v1',
-  translateLanguage: 'English (United States)',
+  url: 'http://localhost:1234/v1'
 };
 
 type SettingsContextValue = {
@@ -55,6 +55,17 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(key, String(value));
     });
   }, [state]);
+
+  useEffect(() => {
+    if (!window.system?.setAutoRun) return;
+
+    window.system
+      .setAutoRun(state.autoRun)
+      .catch((err) => {
+        console.error('[auto-run] ipc failed', err);
+        setGlobalError(mapError(err));
+      });
+  }, [state.autoRun]);
 
   return (
     <SettingsContext.Provider value={{ state, dispatch }}>

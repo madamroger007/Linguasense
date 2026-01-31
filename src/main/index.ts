@@ -4,25 +4,16 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 const icon = join(__dirname, '../../resources/icon.png')
 import './ipc/ai';
 import './ipc/audio';
-// import './ipc/system';
+import './ipc/system';
 import { registerSystemShortcuts, unregisterSystemShortcuts } from './system/register_shorcut';
 
-/**
- * =========================
- * CHROMIUM FLAGS (WAJIB DI ATAS)
- * =========================
- */
+
 app.commandLine.appendSwitch('enable-speech-input')
 app.commandLine.appendSwitch('enable-speech-api')
 app.commandLine.appendSwitch('use-fake-ui-for-media-stream') // auto allow mic (DEV)
 app.commandLine.appendSwitch('disable-http-cache');
 app.commandLine.appendSwitch('disable-background-networking');
 
-/**
- * =========================
- * CREATE WINDOW
- * =========================
- */
 function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -47,11 +38,6 @@ function createWindow(): BrowserWindow {
     return { action: 'deny' }
   })
 
-  /**
- * =========================
- * FALLBACK SHORTCUT (WAYLAND SAFE)
- * =========================
- */
   mainWindow.webContents.on('before-input-event', (_, input) => {
     if (input.control && input.shift && input.code === 'KeyS') {
       console.log('[shortcut fallback] CTRL+SHIFT+S');
@@ -64,7 +50,6 @@ function createWindow(): BrowserWindow {
     }
   });
 
-
   // DEV / PROD loader
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
@@ -75,11 +60,6 @@ function createWindow(): BrowserWindow {
   return mainWindow;
 }
 
-/**
- * =========================
- * APP READY
- * =========================
- */
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
 
@@ -108,11 +88,6 @@ app.whenReady().then(() => {
   })
 })
 
-/**
- * =========================
- * APP QUIT
- * =========================
- */
 app.on('window-all-closed', () => {
   unregisterSystemShortcuts();
   if (process.platform !== 'darwin') {
