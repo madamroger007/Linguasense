@@ -19,7 +19,7 @@ function createWindow(): BrowserWindow {
     width: 900,
     height: 670,
     show: false,
-    autoHideMenuBar: false,
+    autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.mjs'), // sesuai output build kamu
@@ -40,12 +40,10 @@ function createWindow(): BrowserWindow {
 
   mainWindow.webContents.on('before-input-event', (_, input) => {
     if (input.control && input.shift && input.code === 'KeyS') {
-      console.log('[shortcut fallback] CTRL+SHIFT+S');
       mainWindow?.webContents.send('system:toggle-speech');
     }
 
     if (input.control && input.shift && input.code === 'KeyT') {
-      console.log('[shortcut fallback] CTRL+SHIFT+T');
       mainWindow?.webContents.send('system:translate-active-window');
     }
   });
@@ -77,8 +75,6 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
-  ipcMain.on('ping', () => console.log('pong'))
 
   const mainWindow = createWindow();
   registerSystemShortcuts(mainWindow);
