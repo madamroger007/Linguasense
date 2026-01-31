@@ -1,8 +1,8 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from 'next-themes';
 import { useEffect } from 'react';
-import { SettingsProvider } from './context/SettingsContext';
-import { SpeakingProvider } from './context/SpeakingContext';
+import { SettingsProvider } from './provider/SettingsProvider';
+import { SpeakingProvider } from './provider/SpeakingProvider';
 import {
   DesktopSidebar,
   TabletHeader,
@@ -15,6 +15,12 @@ import Reading from './pages/Reading';
 import Writing from './pages/Writing';
 import Settings from './pages/Settings';
 import { GlobalErrorBanner } from './components/alert/error';
+import { SystemProvider } from './provider/SystemProvider';
+import { useSystemShortcuts } from './hooks/system/useSystemShortcuts';
+import { SystemSpeechRuntime } from './hooks/system/SystemSpeechRuntime';
+import { SystemTranslateRuntime } from './hooks/system/SystemTranslateRuntime';
+import Translate from './pages/Translate';
+
 
 function Layout({ children }: { children: React.ReactNode }) {
   // Initialize global font size from localStorage
@@ -39,25 +45,42 @@ function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AppInner() {
+  useSystemShortcuts();
+
+  return (
+    <>
+
+      <SystemSpeechRuntime />
+      {/* <SystemTranslateRuntime /> */}
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/speaking" element={<Speaking />} />
+          <Route path="/reading" element={<Reading />} />
+          <Route path="/writing" element={<Writing />} />
+          <Route path="/settings" element={<Settings />} />
+          {/* <Route path="/translate-popup" element={<Translate/>} /> */}
+        </Routes>
+      </Layout>
+
+    </>
+  );
+}
+
 export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <SpeakingProvider>
-        <SettingsProvider>
-          <HashRouter>
-            <Layout>
+      <SystemProvider>
+        <SpeakingProvider>
+          <SettingsProvider>
+            <HashRouter>
               <GlobalErrorBanner />
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/speaking" element={<Speaking />} />
-                <Route path="/reading" element={<Reading />} />
-                <Route path="/writing" element={<Writing />} />
-                <Route path="/settings" element={<Settings />} />
-              </Routes>
-            </Layout>
-          </HashRouter>
-        </SettingsProvider>
-      </SpeakingProvider>
+              <AppInner />
+            </HashRouter>
+          </SettingsProvider>
+        </SpeakingProvider>
+      </SystemProvider>
     </ThemeProvider>
   );
 }

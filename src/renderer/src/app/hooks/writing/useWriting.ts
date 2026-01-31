@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import { useSettings } from '../../context/SettingsContext';
+import { useSettings } from '../../provider/SettingsProvider';
 import { buildWritingDescriptionPrompt, buildWritingFeedbackPrompt } from '../../../../../shared/model/prompts/writing';
-import { setGlobalError } from '@renderer/app/reducer/store/error';
+import { setGlobalError } from '@renderer/app/store/error';
 import { mapError } from '@renderer/utils/error';
 
 export interface WritingFeedback {

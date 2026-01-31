@@ -1,12 +1,12 @@
 import { AIProvider, AIRequest } from '../../../shared/types/aiprovider';
 import { createAIClient } from './client';
-import { speakingPrompt } from '../../../shared/model/prompts/speaking';
 
 export async function speakWithAI(
   payload: {
     provider: AIProvider;
     request: AIRequest;
-  }
+  },
+  promptOverride: string
 ) {
   try {
     const client = await createAIClient(payload.request.apiKey, payload.request.url);
@@ -14,7 +14,7 @@ export async function speakWithAI(
     const completion = await client.chat.completions.create({
       model: payload.request.model,
       messages: [
-        { role: 'system', content: speakingPrompt(payload.request.language) },
+        { role: 'system', content: promptOverride},
         { role: 'user', content: payload.request.message },
       ],
       temperature: 0.7,

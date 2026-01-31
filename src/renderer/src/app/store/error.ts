@@ -1,5 +1,5 @@
 import { useReducer } from 'react';
-import { errorReducer } from '../error';
+import { errorReducer } from '../reducer/error';
 let globalDispatch: React.Dispatch<any> | null = null;
 
 export function useErrorStore() {

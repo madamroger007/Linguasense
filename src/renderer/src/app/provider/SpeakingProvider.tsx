@@ -7,16 +7,14 @@ const SpeakingContext = createContext<{
   dispatch: React.Dispatch<SpeakingAction>;
 } | null>(null);
 
+const initialStore: SpeakingStore = {
+  state: 'idle',
+  messages: [],
+  loading: false,
+  language: 'English (United States)',
+};
 export function SpeakingProvider({ children }: { children: React.ReactNode }) {
-  const [store, dispatch] = useReducer(speakingReducer, {
-    state: 'idle',
-    messages: [
-      {
-        role: 'ai',
-        content: 'Am ready when you are!',
-      },
-    ],
-  });
+  const [store, dispatch] = useReducer(speakingReducer, initialStore);
 
   return (
     <SpeakingContext.Provider value={{ store, dispatch }}>

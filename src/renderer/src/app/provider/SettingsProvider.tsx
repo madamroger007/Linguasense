@@ -1,4 +1,3 @@
-
 import {
   createContext,
   useContext,
@@ -14,11 +13,11 @@ const initialState: SettingsState = {
   fontSize: 16,
   dailyReminders: true,
   autoRun: true,
-  aiProvider: 'openai',
-  aiModel: 'gpt-4o-mini',
-  speakingLanguage: 'english-us',
-  apiKey: '',
-  url: '',
+  aiProvider: 'lmstudio',
+  aiModel: 'OpenAI 20B',
+  apiKey: 'empty',
+  url: 'http://localhost:1234/v1',
+  translateLanguage: 'English (United States)',
 };
 
 type SettingsContextValue = {
@@ -31,9 +30,6 @@ const SettingsContext = createContext<SettingsContextValue | null>(null);
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(settingsReducer, initialState);
 
-  // =========================
-  // LOAD FROM localStorage
-  // =========================
   useEffect(() => {
     const payload: Record<string, string | number | boolean> = {};
 
@@ -47,16 +43,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
               ? false
               : isNaN(Number(value))
                 ? value
-                : Number(value);
+                : Number(value) || '';
       }
     });
 
     dispatch({ type: 'LOAD', payload: payload as Partial<SettingsState> });
   }, []);
 
-  // =========================
-  // PERSIST TO localStorage
-  // =========================
   useEffect(() => {
     Object.entries(state).forEach(([key, value]) => {
       localStorage.setItem(key, String(value));

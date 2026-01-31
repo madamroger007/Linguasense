@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { playTTS, stopTTS } from '../../../utils/text_speech';
-import { useSettings } from '../../context/SettingsContext';
+import { useSettings } from '../../provider/SettingsProvider';
 import { buildArticlePrompt } from '../../../../../shared/model/prompts/reading';
-import { setGlobalError } from '@renderer/app/reducer/store/error';
+import { setGlobalError } from '@renderer/app/store/error';
 import { mapError } from '@renderer/utils/error';
 export function useReadingArticle() {
   const { state: settings } = useSettings();

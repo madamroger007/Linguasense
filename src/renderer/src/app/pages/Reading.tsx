@@ -20,7 +20,7 @@ const readingLevels = [
 ];
 
 export default function Reading() {
- const {
+  const {
     selectedLevel,
     speakingLanguage,
     micEnabled,
@@ -42,11 +42,10 @@ export default function Reading() {
           {readingLevels.map(item => (
             <Card
               key={item.level}
-              className={`p-4 cursor-pointer transition-all ${
-                selectedLevel === item.level
-                  ? 'ring-2 ring-accent'
-                  : 'hover:shadow-md'
-              }`}
+              className={`p-4 cursor-pointer transition-all ${selectedLevel === item.level
+                ? 'ring-2 ring-accent'
+                : 'hover:shadow-md'
+                }`}
               onClick={() => setSelectedLevel(item.level)}
             >
               <div className="flex items-center gap-3">
@@ -100,7 +99,7 @@ export default function Reading() {
 
           <div className="mt-6 flex gap-3">
             <Button onClick={generateNewArticle} disabled={loadingArticle}>
-              New Article
+              Generate New Article
             </Button>
           </div>
         </Card>

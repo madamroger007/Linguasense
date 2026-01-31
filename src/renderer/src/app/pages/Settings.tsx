@@ -10,13 +10,14 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { Input } from '../components/ui/input';
-import { useSettings } from '../context/SettingsContext';
+import { useSettings } from '../provider/SettingsProvider';
 import { AI_CATALOG } from '../../../../shared/utils/aiCatalog';
-import { AIProvider } from 'src/shared/types/aiprovider';
+import { AIProvider } from '../../../../shared/types/aiprovider';
+import { LANGUAGES } from '../../../../shared/utils/language';
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
-const { state, dispatch } = useSettings();
+  const { state, dispatch } = useSettings();
 
   return (
     <div className="p-4 md:p-6 lg:p-8 pb-20 md:pb-6">
@@ -66,7 +67,6 @@ const { state, dispatch } = useSettings();
             </div>
           </Card>
 
-          {/* Learning Preferences */}
           <Card className="p-6">
             <h3 className="text-xl mb-4">Learning Preferences</h3>
             <div className="space-y-4">
@@ -94,6 +94,33 @@ const { state, dispatch } = useSettings();
                   checked={state.autoRun}
                   onCheckedChange={(value) => dispatch({ type: 'SET_AUTO_RUN', payload: value })}
                 />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <h3 className="text-xl mb-4">Translate Settings</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Select language
+                </label>
+                <Select value={state.translateLanguage} onValueChange={(value) => dispatch({ type: 'SET_TRANSLATE_LANGUAGE', payload: value })}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LANGUAGES.map(({ id, label }) => (
+                      <SelectItem key={id} value={label}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <p className="text-xs text-muted-foreground mt-2">
+                  Choose your preferred AI assistant for language tutoring  <a className='text-blue-500' href={AI_CATALOG[state.aiProvider].docs} target="_blank" rel="noopener noreferrer">Documentation</a>
+                </p>
               </div>
             </div>
           </Card>

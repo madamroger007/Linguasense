@@ -9,16 +9,17 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { Label } from '../components/ui/label';
-import { useSettings } from '../context/SettingsContext';
-import { useRealtimeSpeaking } from '../hooks/speaking/useRealtimeSpeaking';
-import { useSpeaking } from '../context/SpeakingContext';
+import { useSpeaking } from '../provider/SpeakingProvider';
 import { LANGUAGES } from '../../../../shared/utils/language';
+import { useSystem } from '../provider/SystemProvider';
 
 export default function Speaking() {
-  const { state, dispatch } = useSettings();
-  const { start, stop, listening, messages } =
-    useRealtimeSpeaking();
-  const { store } = useSpeaking();
+  const { store, dispatch } = useSpeaking();
+  const { state: system, dispatch: dispatchSystem } = useSystem();
+
+  const listening = system.speechActive;
+  const messages = store.messages;
+
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
@@ -29,7 +30,7 @@ export default function Speaking() {
           <Card className="p-6 flex flex-col items-center">
             <div className='w-full'>
               <Label htmlFor="language-select" className='my-2 text-base'>Response Language</Label>
-              <Select value={state.speakingLanguage} onValueChange={(value) => dispatch({ type: 'SET_SPEAKING_LANGUAGE', payload: value })}>
+              <Select value={store.language} onValueChange={(value) => dispatch({ type: 'SET_LANGUAGE', value: value })}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
@@ -43,7 +44,9 @@ export default function Speaking() {
               </Select>
             </div>
             <motion.button
-              onClick={listening ? stop : start}
+              onClick={() =>
+                dispatchSystem({ type: 'TOGGLE_SPEECH_ACTIVE' })
+              }
               className={`w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center transition-all ${listening
                 ? 'bg-destructive text-destructive-foreground'
                 : 'bg-accent text-accent-foreground hover:scale-105'

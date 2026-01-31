@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { clearGlobalError, useErrorStore } from '../../reducer/store/error';
+import { clearGlobalError, useErrorStore } from '../../store/error';
 import { executeErrorStatus } from '../../../utils/error';
 
 export function GlobalErrorBanner() {
