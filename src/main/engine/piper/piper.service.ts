@@ -4,26 +4,33 @@ import path from 'path';
 import os from 'os';
 import { PIPER_CONFIG } from './piper.config';
 
-export async function speakWithPiper(text: string, model: string): Promise<string> {
+export async function speakWithPiper(
+  text: string,
+  modelPath: string
+): Promise<string> {
+  if (!text.trim()) {
+    throw new Error('[PIPER] Empty text');
+  }
+
+  if (!fs.existsSync(PIPER_CONFIG.binary)) {
+    throw new Error(`[PIPER] Binary not found: ${PIPER_CONFIG.binary}`);
+  }
+
+  if (!fs.existsSync(modelPath)) {
+    throw new Error(`[PIPER] Model file not found: ${modelPath}`);
+  }
+
   const outFile = path.join(
     os.tmpdir(),
     `piper-${Date.now()}.wav`
   );
 
   return new Promise((resolve, reject) => {
-    if (!fs.existsSync(PIPER_CONFIG.binary)) {
-      return reject(
-        new Error(`Piper binary not found: ${PIPER_CONFIG.binary}`)
-      );
-    }
-
     const p = spawn(
       PIPER_CONFIG.binary,
       [
-        '--model',
-        model,
-        '--output_file',
-        outFile,
+        '--model', modelPath,
+        '--output_file', outFile,
       ],
       {
         stdio: ['pipe', 'pipe', 'pipe'],
@@ -36,29 +43,27 @@ export async function speakWithPiper(text: string, model: string): Promise<strin
 
     let stderr = '';
 
-    p.stderr.on('data', (d) => {
-      stderr += d.toString();
-      console.error('[PIPER]', d.toString());
+    p.stderr.on('data', d => {
+      const msg = d.toString();
+      stderr += msg;
+      console.error('[PIPER]', msg);
     });
 
-    // 🔑 WAJIB newline
     p.stdin.write(text.trim() + '\n');
     p.stdin.end();
 
-    p.on('close', (code) => {
+    p.on('close', code => {
       if (code === 0 && fs.existsSync(outFile)) {
         resolve(outFile);
       } else {
         reject(
           new Error(
-            `Piper failed (code ${code}): ${stderr || 'no stderr'}`
+            `[PIPER] Failed (code ${code}): ${stderr || 'no stderr'}`
           )
         );
       }
     });
 
-    p.on('error', (err) => {
-      reject(err);
-    });
+    p.on('error', reject);
   });
 }

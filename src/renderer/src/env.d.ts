@@ -1,4 +1,7 @@
 /// <reference types="vite/client" />
+
+import { get } from "http";
+
 export { };
 declare global {
   interface Window {
@@ -18,13 +21,26 @@ declare global {
         };
       }): Promise<string>;
 
+      translate(payload: {
+        provider: string;
+        request: {
+          model: string;
+          language: string;
+          message: string;
+          apiKey: string;
+          url: string;
+        };
+      }): Promise<string>;
       onWhisperText(cb: (text: string) => void): () => void;
-
       tts(text: string): Promise<{
         audio: ArrayBuffer;
         mime: string;
       }>;
       stopTTS(): void;
+    };
+    system: {
+      onToggleSpeech: (cb: () => void) => () => void;
+      setAutoRun: (enable: boolean) => Promise<void>;
     };
   }
 }

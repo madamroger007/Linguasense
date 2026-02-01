@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react';
-import { useSettings } from '../../context/SettingsContext';
+import { useSettings } from '../../provider/SettingsProvider';
 import { buildWritingDescriptionPrompt, buildWritingFeedbackPrompt } from '../../../../../shared/model/prompts/writing';
+import { setGlobalError } from '@renderer/app/store/error';
+import { mapError } from '@renderer/utils/error';
 
 export interface WritingFeedback {
   suggestions: string[];
@@ -43,7 +45,8 @@ export function useWriting() {
       setDescriptionText(result);
       setUserWriting('');
     } catch (err) {
-      console.error('[writing] generate description failed', err);
+      const appError = mapError(err);
+      setGlobalError(appError);
     } finally {
       setLoadingDescription(false);
     }
@@ -84,7 +87,8 @@ export function useWriting() {
       const parsed: WritingFeedback = JSON.parse(result);
       setFeedback(parsed);
     } catch (err) {
-      console.error('[writing] feedback failed', err);
+      const appError = mapError(err);
+      setGlobalError(appError);
     } finally {
       setLoadingFeedback(false);
     }

@@ -1,44 +1,82 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useSettings } from '../../context/SettingsContext';
-import { useSpeaking } from '../../context/SpeakingContext';
+import { useSettings } from '../../provider/SettingsProvider';
+import { useSpeaking } from '../../provider/SpeakingProvider';
 import { getMicrophoneStream } from '../audio/useMicrophone';
 import { startAudioChunking } from '../audio/useAudioChunk';
 import { playTTS, stopTTS } from '../../../utils/text_speech';
+import { mapError } from '@renderer/utils/error';
+import { setGlobalError } from '@renderer/app/store/error';
+import { useSystem } from '@renderer/app/provider/SystemProvider';
 
 export function useRealtimeSpeaking() {
-  const { state: stateSettings } = useSettings();
+  const { state: settings } = useSettings();
   const { store, dispatch } = useSpeaking();
+  const { state: system } = useSystem();
+
+  const micActiveRef = useRef(false);
+  const startingRef = useRef(false);
+  const cancelledRef = useRef(false);
   const stopChunkingRef = useRef<null | (() => void)>(null);
-  const isMicActiveRef = useRef(false);
-  const listening = store.state === 'listening';
 
   const startMic = useCallback(async () => {
-    if (isMicActiveRef.current) return;
+    if (
+      micActiveRef.current ||
+      startingRef.current ||
+      cancelledRef.current
+    ) {
+      return;
+    }
 
-    const stream = await getMicrophoneStream();
+    startingRef.current = true;
 
-    stopChunkingRef.current = startAudioChunking(stream, (chunk) => {
-      window.audio.sendChunk(chunk);
-    });
+    try {
+      const stream = await getMicrophoneStream();
+      if (cancelledRef.current) return;
+      stopChunkingRef.current = startAudioChunking(stream, chunk => {
+        window.audio.sendChunk(chunk);
+      });
 
-    isMicActiveRef.current = true;
+      micActiveRef.current = true;
+    } catch (err) {
+      const appError = mapError(err);
+      setGlobalError(appError);
+    } finally {
+      startingRef.current = false;
+    }
   }, []);
 
   const stopMic = useCallback(() => {
-    if (!isMicActiveRef.current) return;
+    cancelledRef.current = true;
+    startingRef.current = false;
+
+    if (!micActiveRef.current) return;
 
     stopChunkingRef.current?.();
     stopChunkingRef.current = null;
 
     window.ai.stopTTS();
     stopTTS();
-    isMicActiveRef.current = false;
 
+    micActiveRef.current = false;
   }, []);
+
+  useEffect(() => {
+    cancelledRef.current = false;
+    if (system.speechActive) {
+      startMic();
+    } else {
+      stopMic();
+    }
+
+    return () => {
+      cancelledRef.current = true;
+      stopMic();
+    };
+  }, [system.speechActive, startMic, stopMic]);
 
   const handleWhisperText = useCallback(
     async (spokenText: string) => {
-      if (!spokenText) return;
+      if (!spokenText || !system.speechActive || cancelledRef.current) return;
 
       dispatch({ type: 'PROCESSING' });
 
@@ -49,14 +87,14 @@ export function useRealtimeSpeaking() {
         });
 
         const reply = await window.ai.speak({
-          provider: stateSettings.aiProvider,
+          provider: settings.aiProvider,
           request: {
-            model: stateSettings.aiModel,
-            language: stateSettings.speakingLanguage,
+            model: settings.aiModel,
+            language: store.language,
             message: spokenText,
-            apiKey: stateSettings.apiKey,
-            url: stateSettings.url,
-          }
+            apiKey: settings.apiKey,
+            url: settings.url,
+          },
         });
 
         dispatch({
@@ -72,34 +110,37 @@ export function useRealtimeSpeaking() {
 
         dispatch({ type: 'AI_END' });
 
+        // 🔊 resume mic if still active
+        if (system.speechActive && !cancelledRef.current) {
+          startMic();
+        }
+
       } catch (err) {
-        dispatch({ type: 'ERROR' });
+        const appError = mapError(err);
+        setGlobalError(appError);
       }
     },
-    [stateSettings.aiProvider, stateSettings.aiModel, stateSettings.speakingLanguage, stateSettings.apiKey, stateSettings.url, dispatch]
+    [
+      settings.aiProvider,
+      settings.aiModel,
+      settings.apiKey,
+      settings.url,
+      store.language,
+      system.speechActive,
+      dispatch,
+      startMic,
+      stopMic,
+    ]
   );
 
   useEffect(() => {
+    if (!system.speechActive) return;
+
     const unsubscribe = window.ai.onWhisperText(handleWhisperText);
-    return unsubscribe;
-  }, [handleWhisperText]);
-
-  useEffect(() => {
-    if (listening) {
-      startMic();
-    } else {
-      stopMic();
-    }
-
     return () => {
-      stopMic();
+      unsubscribe?.();
     };
-  }, [listening, startMic, stopMic]);
+  }, [handleWhisperText, system.speechActive]);
 
-  return {
-    start: () => dispatch({ type: 'START' }),
-    stop: () => dispatch({ type: 'STOP' }),
-    listening,
-    messages: store.messages,
-  };
+  return null;
 }

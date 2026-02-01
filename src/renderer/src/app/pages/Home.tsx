@@ -66,17 +66,6 @@ export default function Home() {
                 Ctrl + Shift + S
               </kbd>
             </div>
-            <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-              <div>
-                <p className="font-medium">Translate Anywhere</p>
-                <p className="text-sm text-muted-foreground">
-                  Translate selected text on any page instantly
-                </p>
-              </div>
-              <kbd className="px-3 py-1 bg-primary text-primary-foreground rounded font-mono text-sm">
-                Ctrl + Shift + T
-              </kbd>
-            </div>
           </div>
         </Card>
       </div>

@@ -1,5 +1,4 @@
 export function segmentText(text: string): string[] {
-  // Pisah berdasarkan punctuation tapi jaga kata teknis
   return text
     .split(/(?<=[.!?,])/)
     .flatMap(s =>

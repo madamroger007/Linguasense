@@ -10,13 +10,13 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { Input } from '../components/ui/input';
-import { useSettings } from '../context/SettingsContext';
+import { useSettings } from '../provider/SettingsProvider';
 import { AI_CATALOG } from '../../../../shared/utils/aiCatalog';
-import { AIProvider } from 'src/shared/types/aiprovider';
+import { AIProvider } from '../../../../shared/types/aiprovider';
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
-const { state, dispatch } = useSettings();
+  const { state, dispatch } = useSettings();
 
   return (
     <div className="p-4 md:p-6 lg:p-8 pb-20 md:pb-6">
@@ -66,23 +66,9 @@ const { state, dispatch } = useSettings();
             </div>
           </Card>
 
-          {/* Learning Preferences */}
           <Card className="p-6">
-            <h3 className="text-xl mb-4">Learning Preferences</h3>
+            <h3 className="text-xl mb-4">Preferences</h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Daily Reminders</p>
-                  <p className="text-sm text-muted-foreground">
-                    Get notified to practice
-                  </p>
-                </div>
-                <Switch
-                  checked={state.dailyReminders}
-                  onCheckedChange={(value) => dispatch({ type: 'SET_DAILY_REMINDERS', payload: value })}
-                />
-              </div>
-
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Auto Run App</p>
@@ -132,7 +118,7 @@ const { state, dispatch } = useSettings();
                   </SelectTrigger>
                   <SelectContent>
                     {AI_CATALOG[state.aiProvider].models.map((model) => (
-                      <SelectItem key={model.id} value={model.id}>
+                      <SelectItem key={model.id} value={model.label}>
                         {model.label}
                       </SelectItem>
                     ))}

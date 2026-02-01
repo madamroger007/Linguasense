@@ -6,3 +6,9 @@
 html {
   font-size: var(--app-font-size);
 }
+
+body {
+  margin: 0;
+  background: transparent;
+  font-family: system-ui, sans-serif;
+}

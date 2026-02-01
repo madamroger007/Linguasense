@@ -36,7 +36,7 @@ export const AI_CATALOG: Record<AIProvider, {
     label: 'Ollama (Local · Free)',
     requiresApiKey: false,
     free: true,
-    requiresUrl: false,
+    requiresUrl: true,
     docs: "https://ollama.com/docs",
     models: [
       { id: 'llama3', label: 'LLaMA 3', free: true },
@@ -52,7 +52,7 @@ export const AI_CATALOG: Record<AIProvider, {
     label: 'OpenAI (Paid)',
     requiresApiKey: true,
     free: false,
-    requiresUrl: false,
+    requiresUrl: true,
     docs: "https://platform.openai.com/docs",
     models: [
       { id: 'gpt-4o-mini', label: 'GPT-4o Mini (Paid)', free: false },
@@ -63,7 +63,7 @@ export const AI_CATALOG: Record<AIProvider, {
     label: 'DeepSeek (Limited Free)',
     requiresApiKey: true,
     free: false,
-    requiresUrl: false,
+    requiresUrl: true,
     docs: "https://deepseek.com/docs",
     models: [
       { id: 'deepseek-chat', label: 'DeepSeek Chat (Trial)', free: false },
@@ -73,7 +73,7 @@ export const AI_CATALOG: Record<AIProvider, {
     label: 'Claude (Paid)',
     requiresApiKey: true,
     free: false,
-    requiresUrl: false,
+    requiresUrl: true,
     docs: "https://claude.ai/docs",
     models: [
       { id: 'claude-opus-4.5', label: 'Claude Opus 4.5', free: false },
@@ -85,7 +85,7 @@ export const AI_CATALOG: Record<AIProvider, {
     label: 'Gemini (Limited Free)',
     requiresApiKey: true,
     free: true,
-    requiresUrl: false,
+    requiresUrl: true,
     docs: "https://developers.generativeai.google/docs/gemini/getting-started",
     models: [
       { id: 'gemini-3-flash-preview', label: 'gemini-3-flash-preview', free: true },

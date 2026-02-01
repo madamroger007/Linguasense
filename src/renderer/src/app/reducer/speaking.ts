@@ -28,6 +28,11 @@ export function speakingReducer(
         ...store,
         messages: [...store.messages, action.message],
       };
+    case 'SET_LANGUAGE':
+      return {
+        ...store,
+        language: action.value,
+      };
     case 'SET_LOADING':
       return { ...store, loading: action.value };
     default:

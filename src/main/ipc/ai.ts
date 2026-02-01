@@ -2,10 +2,11 @@ import { ipcMain } from 'electron';
 import { speakWithAI } from '../engine/provider';
 import fs from 'fs';
 import { speakMultilang } from '../engine/piper/piper.multilang.service';
+import { speakingPrompt } from '../../shared/model/prompts/speaking';
 
 let abortController: AbortController | null = null;
 ipcMain.handle('ai:speak', async (_, payload) => {
-  return await speakWithAI(payload);
+  return await speakWithAI(payload, speakingPrompt(payload.request.language));
 });
 
 ipcMain.handle('ai:tts', async (_, text: string) => {

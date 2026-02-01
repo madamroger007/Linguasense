@@ -2,23 +2,25 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import { WHISPER_CONFIG } from './whisper.config';
-
+import { app } from 'electron';
 export async function transcribePCM(
   pcm: Float32Array
 ): Promise<string> {
   if (!pcm || pcm.length === 0) return '';
 
-  const wavPath = path.join(process.cwd(), '/resources/ffmeg/test.wav');
+
+  const tempDir = path.join(app.getPath('userData'), 'audio-cache');
+  fs.mkdirSync(tempDir, { recursive: true });
+
+  const wavPath = path.join(tempDir, 'input.wav');
 
   writeWav(wavPath, pcm);
 
   if (!fs.existsSync(WHISPER_CONFIG.binaryPath)) {
-    console.error(
-      '[WHISPER] Binary not found:',
-      WHISPER_CONFIG.binaryPath
-    );
+    console.error('[WHISPER] Binary not found:', WHISPER_CONFIG.binaryPath);
     return '';
   }
+
 
   return new Promise((resolve, reject) => {
     const p = spawn(

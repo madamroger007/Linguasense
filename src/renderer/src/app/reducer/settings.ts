@@ -25,7 +25,6 @@ export function settingsReducer(
         aiModel: firstModel ?? state.aiModel,
       };
     }
-
     case 'SET_DAILY_REMINDERS':
       return { ...state, dailyReminders: action.payload };
 
@@ -34,9 +33,6 @@ export function settingsReducer(
 
     case 'SET_AI_MODEL':
       return { ...state, aiModel: action.payload };
-
-    case 'SET_SPEAKING_LANGUAGE':
-      return { ...state, speakingLanguage: action.payload };
 
     case 'SET_API_KEY':
       return { ...state, apiKey: action.payload };
