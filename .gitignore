@@ -32,5 +32,6 @@ dist
 out
 
 %USERPROFILE%
-
+_build_external_lib
 resources/**
+

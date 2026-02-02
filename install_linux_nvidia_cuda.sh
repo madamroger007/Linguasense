@@ -81,7 +81,7 @@ fi
 cd whisper
 
 cmake -B build \
-  -DWHISPER_CUBLAS=ON
+  -DGGML_CUDA=ON
 
 cmake --build build -j$(nproc)
 
