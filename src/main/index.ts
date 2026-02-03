@@ -1,7 +1,7 @@
 import { app, shell, BrowserWindow, session } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-const icon = join(__dirname, '../../resources/icon.png')
+const icon = join(__dirname, '../../resources/icon.ico')
 import './ipc/ai';
 import './ipc/audio';
 import './ipc/system';
@@ -18,9 +18,9 @@ function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
-    show: false,
-    autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    show: true,
+    autoHideMenuBar: false,
+    icon: icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.mjs'), // sesuai output build kamu
       sandbox: false,

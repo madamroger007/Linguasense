@@ -2,7 +2,7 @@
 set -e
 
 echo "========================================"
-echo "  Windows + AMD GPU (ROCm / HIP)"
+echo "  Windows + AMD GPU (VULKAN)"
 echo "========================================"
 
 # -------------------------------------------------
@@ -17,39 +17,42 @@ PIPER_TAG="2023.11.14-2"
 PIPER_ZIP="piper_windows_amd64.zip"
 PIPER_URL="https://github.com/rhasspy/piper/releases/download/${PIPER_TAG}/${PIPER_ZIP}"
 
+PIPER_HF_ZIP="https://huggingface.co/madamsjr/piper-voices/resolve/main/resource.zip?download=true"
+
+
 ROOT_DIR="$(pwd)"
 BUILD_DIR="${ROOT_DIR}/_build_external_lib"
 TARGET_DIR="${ROOT_DIR}/resources"
-
-WHISPER_DIR="${BUILD_DIR}/whisper"
-ROCM_HINT="/opt/rocm"
 
 # -------------------------------------------------
 # CHECK TOOLS
 # -------------------------------------------------
 echo "[1/6] Checking tools..."
 
-command -v cmake >/dev/null || { echo "❌ cmake not found"; exit 1; }
-command -v git   >/dev/null || { echo "❌ git not found"; exit 1; }
-command -v curl  >/dev/null || { echo "❌ curl not found"; exit 1; }
-command -v unzip >/dev/null || { echo "❌ unzip not found"; exit 1; }
+for tool in cmake git curl unzip; do
+  command -v "$tool" >/dev/null || {
+    echo "❌ $tool not found"
+    exit 1
+  }
+done
 
 # -------------------------------------------------
-# CHECK HIP / ROCm CLANG
+# FORCE VULKAN SDK (GIT BASH FIX)
 # -------------------------------------------------
-echo "[2/6] Checking ROCm / HIP compiler..."
+echo "[2/6] Setting Vulkan SDK..."
 
-if command -v clang >/dev/null; then
-  HIP_CLANG="$(command -v clang)"
-elif [ -x "${ROCM_HINT}/bin/clang.exe" ]; then
-  HIP_CLANG="${ROCM_HINT}/bin/clang.exe"
-else
-  echo "❌ HIP clang not found"
-  echo "👉 Install AMD HIP SDK / ROCm Windows Preview"
+export VULKAN_SDK="/c/VulkanSDK/1.3.296.0"   # ⬅️ SESUAIKAN
+export PATH="$VULKAN_SDK/Bin:$PATH"
+export VK_LAYER_PATH="$VULKAN_SDK/Bin"
+
+if ! command -v glslc >/dev/null; then
+  echo "❌ glslc not found"
+  echo "👉 Install Vulkan SDK and restart Git Bash"
   exit 1
 fi
 
-echo "✔ HIP clang: $HIP_CLANG"
+echo "✔ Vulkan SDK detected:"
+glslc --version
 
 # -------------------------------------------------
 # PREPARE FOLDERS
@@ -57,33 +60,45 @@ echo "✔ HIP clang: $HIP_CLANG"
 echo "[3/6] Preparing folders..."
 
 mkdir -p "${BUILD_DIR}"
-mkdir -p "${TARGET_DIR}/ffmpeg"
 mkdir -p "${TARGET_DIR}/whisper/models"
-mkdir -p "${TARGET_DIR}/piper"
 
 # -------------------------------------------------
-# BUILD WHISPER (HIP / ROCm)
+# BUILD WHISPER (VULKAN)
 # -------------------------------------------------
-echo "[4/6] Building Whisper (HIP)..."
+echo "[4/6] Building Whisper (Vulkan)..."
 
 cd "${BUILD_DIR}"
 
 if [ ! -d whisper ]; then
-  git clone "${WHISPER_REPO}" whisper
+  git clone https://github.com/ggml-org/whisper.cpp whisper
 fi
 
 cd whisper
+rm -rf build
+mkdir build
 
-cmake -B build \
-  -DWHISPER_HIPBLAS=ON \
-  -DCMAKE_C_COMPILER="${HIP_CLANG}" \
-  -DCMAKE_CXX_COMPILER="${HIP_CLANG}" \
-  -DCMAKE_CXX_FLAGS="--offload-arch=gfx1200"
+# ---- FORCE Vulkan SDK paths (WINDOWS FIX) ----
+export VULKAN_SDK="/c/VulkanSDK/1.4.335.0"   # sesuaikan
+export Vulkan_ROOT="$VULKAN_SDK"
+export PATH="$VULKAN_SDK/Bin:$PATH"
+
+cmake -S . -B build \
+  -G "Visual Studio 17 2022" \
+  -A x64 \
+  -DGGML_VULKAN=ON \
+  -DGGML_HIP=OFF \
+  -DGGML_CUDA=OFF \
+  -DGGML_METAL=OFF \
+  -DVulkan_ROOT="$VULKAN_SDK" \
+  -DVulkan_INCLUDE_DIR="$VULKAN_SDK/Include" \
+  -DVulkan_LIBRARY="$VULKAN_SDK/Lib/vulkan-1.lib" \
+  -DCMAKE_BUILD_TYPE=Release
 
 cmake --build build --config Release
 
-# copy result
-find build -name "whisper*.exe" -exec cp {} "${TARGET_DIR}/whisper/" \;
+# copy binaries
+mkdir -p "${TARGET_DIR}/whisper/bin32"
+cp build/bin/Release/** "${TARGET_DIR}/whisper/bin32"
 
 # -------------------------------------------------
 # DOWNLOAD WHISPER MODEL
@@ -95,13 +110,13 @@ MODEL_PATH="${TARGET_DIR}/whisper/models/${MODEL_NAME}"
 if [ ! -f "${MODEL_PATH}" ]; then
   curl -L "${MODEL_URL}" -o "${MODEL_PATH}"
 else
-  echo "✔ Whisper model already exists"
+  echo "✔ Model already exists"
 fi
 
 # -------------------------------------------------
 # DOWNLOAD PIPER (WINDOWS)
 # -------------------------------------------------
-echo "[6/6] Downloading Piper (Windows)..."
+echo "[6/6] Downloading Piper..."
 
 cd "${TARGET_DIR}"
 
@@ -112,16 +127,20 @@ fi
 unzip -o "${PIPER_ZIP}"
 rm -f "${PIPER_ZIP}"
 
-# -------------------------------------------------
-# DONE
-# -------------------------------------------------
+cd "${TARGET_DIR}/piper"
+curl -L "${PIPER_HF_ZIP}" -o resources.zip
+unzip -o resources.zip -d "${PIPER_DIR}"
+rm -f resources.zip
+
 echo "========================================"
 echo "✅ DONE"
 echo
 echo "Resources layout:"
 echo "  resources/"
-echo "   ├─ ffmpeg/"
 echo "   ├─ whisper/"
-echo "   │   ├─ whisper.exe"
+echo "   │   ├─ whisper-cli.exe"
 echo "   │   └─ models/${MODEL_NAME}"
 echo "   └─ piper/"
+
+pnpm install
+pnpm build:win

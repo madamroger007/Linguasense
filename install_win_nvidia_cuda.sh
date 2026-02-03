@@ -19,33 +19,34 @@ PIPER_URL="https://github.com/rhasspy/piper/releases/download/${PIPER_TAG}/${PIP
 
 ROOT_DIR="$(pwd)"
 BUILD_DIR="${ROOT_DIR}/_build_external_lib"
-RESOURCE_DIR="${ROOT_DIR}/resources"
-
-WHISPER_DIR="${BUILD_DIR}/whisper"
-CUDA_ARCH="native"   # bisa: native / 86 / 89 / 90
+TARGET_DIR="${ROOT_DIR}/resources"
+PIPER_DIR="${TARGET_DIR}/piper"
 
 # -------------------------------------------------
 # CHECK TOOLS
 # -------------------------------------------------
-echo "[1/6] Checking required tools..."
+echo "[1/6] Checking tools..."
 
-command -v cmake >/dev/null || { echo "❌ cmake not found"; exit 1; }
-command -v git   >/dev/null || { echo "❌ git not found"; exit 1; }
-command -v curl  >/dev/null || { echo "❌ curl not found"; exit 1; }
-command -v unzip >/dev/null || { echo "❌ unzip not found"; exit 1; }
+for tool in cmake git curl unzip; do
+  command -v "$tool" >/dev/null || {
+    echo "❌ $tool not found"
+    exit 1
+  }
+done
 
 # -------------------------------------------------
 # CHECK CUDA
 # -------------------------------------------------
 echo "[2/6] Checking CUDA..."
 
-if ! command -v nvcc >/dev/null; then
+if ! command -v nvcc >/dev/null 2>&1; then
   echo "❌ nvcc not found"
-  echo "👉 Install CUDA Toolkit and ensure nvcc is in PATH"
+  echo "👉 Install CUDA Toolkit + restart terminal"
   exit 1
 fi
 
-echo "✔ CUDA: $(nvcc --version | grep release)"
+echo "✔ CUDA detected:"
+nvcc --version
 
 # -------------------------------------------------
 # PREPARE FOLDERS
@@ -53,9 +54,8 @@ echo "✔ CUDA: $(nvcc --version | grep release)"
 echo "[3/6] Preparing folders..."
 
 mkdir -p "${BUILD_DIR}"
-mkdir -p "${RESOURCE_DIR}/ffmpeg"
-mkdir -p "${RESOURCE_DIR}/whisper/models"
-mkdir -p "${RESOURCE_DIR}/piper"
+mkdir -p "${TARGET_DIR}/whisper/models"
+mkdir -p "${PIPER_DIR}"
 
 # -------------------------------------------------
 # BUILD WHISPER (CUDA)
@@ -69,53 +69,68 @@ if [ ! -d whisper ]; then
 fi
 
 cd whisper
+rm -rf build
 
-cmake -B build \
+cmake -S . -B build \
+  -G "Visual Studio 17 2022" \
+  -A x64 \
   -DGGML_CUDA=ON \
-  -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCH}"
+  -DGGML_HIP=OFF \
+  -DGGML_VULKAN=OFF \
+  -DGGML_METAL=OFF \
+  -DCMAKE_BUILD_TYPE=Release
 
 cmake --build build --config Release
 
-# copy executable
-find build -name "whisper*.exe" -exec cp {} "${RESOURCE_DIR}/whisper/" \;
+# copy binaries
+mkdir -p "${TARGET_DIR}/whisper/bin32"
+cp build/bin/Release/whisper*.exe "${TARGET_DIR}/whisper/bin32"
 
 # -------------------------------------------------
 # DOWNLOAD WHISPER MODEL
 # -------------------------------------------------
 echo "[5/6] Downloading Whisper model..."
+# copy binaries
+mkdir -p "${TARGET_DIR}/whisper/bin32"
+cp build/bin/Release/** "${TARGET_DIR}/whisper/bin32"
 
-MODEL_PATH="${RESOURCE_DIR}/whisper/models/${MODEL_NAME}"
-
+MODEL_PATH="${TARGET_DIR}/whisper/models/${MODEL_NAME}"
+q
 if [ ! -f "${MODEL_PATH}" ]; then
   curl -L "${MODEL_URL}" -o "${MODEL_PATH}"
 else
-  echo "✔ Whisper model already exists"
+  echo "✔ Model already exists"
 fi
 
 # -------------------------------------------------
 # DOWNLOAD PIPER (WINDOWS)
 # -------------------------------------------------
-echo "[6/6] Downloading Piper (Windows)..."
+echo "[6/6] Downloading Piper..."
 
-cd "${RESOURCE_DIR}"
+cd "${TARGET_DIR}"
 
 if [ ! -f "${PIPER_ZIP}" ]; then
   curl -LO "${PIPER_URL}"
 fi
 
-unzip -o "${PIPER_ZIP}"
+unzip -o "${PIPER_ZIP}" -d "${PIPER_DIR}"
 rm -f "${PIPER_ZIP}"
 
-# -------------------------------------------------
-# DONE
-# -------------------------------------------------
+cd "${TARGET_DIR}/piper"
+curl -L "${PIPER_HF_ZIP}" -o resources.zip
+unzip -o resources.zip -d "${PIPER_DIR}"
+rm -f resources.zip
+
 echo "========================================"
 echo "✅ DONE"
 echo
 echo "Resources layout:"
 echo "  resources/"
-echo "   ├─ ffmpeg/"
 echo "   ├─ whisper/"
 echo "   │   ├─ whisper.exe"
 echo "   │   └─ models/${MODEL_NAME}"
 echo "   └─ piper/"
+
+
+pnpm install
+pnpm build:win
