@@ -21,7 +21,7 @@ asarUnpack:
 # ---------------- WINDOWS ----------------
 win:
   executableName: linguasense
-  icon: build/icon.ico
+  icon: build/win/icon.ico
   target:
     - target: zip
       arch:
@@ -29,12 +29,9 @@ win:
 
 # ---------------- LINUX ----------------
 linux:
-  icon: build/icon.png
+  icon: build/linux/icons
   target:
     - AppImage
-    - deb
-    - snap
-  maintainer: linguasense.org
   category: Utility
 
 appImage:

@@ -98,7 +98,7 @@ cmake -B build \
 
 cmake --build build -j$(nproc)
 
-mkdir -p "${RESOURCE_DIR}/whisper/bin"
+
 cp -r build/bin "${RESOURCE_DIR}/whisper/bin"
 
 # -------------------------------------------------
