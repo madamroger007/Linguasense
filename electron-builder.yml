@@ -1,6 +1,6 @@
 appId: com.linguasense.app
 productName: linguasense
-
+copyright: '2026 Madamroger'
 directories:
   buildResources: build
   output: dist
@@ -38,53 +38,7 @@ linux:
   category: Utility
 
 appImage:
-  artifactName: ${name}-${version}.${ext}
-
-npmRebuild: false
-
-electronDownload:
-  mirror: https://npmmirror.com/mirrors/electron/
-appId: com.linguasense.app
-productName: linguasense
-
-directories:
-  buildResources: build
-  output: dist
-
-files:
-  - out/**
-  - resources/**
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
-  - '!{tsconfig*.json,CHANGELOG.md,README.md}'
-
-asarUnpack:
-  - resources/**
-
-# ---------------- WINDOWS ----------------
-win:
-  executableName: linguasense
-  icon: build/icon.ico
-  target:
-    - target: zip
-      arch:
-        - x64
-
-# ---------------- LINUX ----------------
-linux:
-  icon: build/icon.png
-  target:
-    - AppImage
-    - deb
-    - snap
-  maintainer: linguasense.org
-  category: Utility
-
-appImage:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}.${ext}
 
 npmRebuild: false
 

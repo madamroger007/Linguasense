@@ -135,7 +135,7 @@ export function useRealtimeSpeaking() {
 
   useEffect(() => {
     if (!system.speechActive) return;
-
+    console.log('Listening for whisper text...');
     const unsubscribe = window.ai.onWhisperText(handleWhisperText);
     return () => {
       unsubscribe?.();

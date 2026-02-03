@@ -83,8 +83,8 @@ cmake -S . -B build \
 cmake --build build --config Release
 
 # copy binaries
-mkdir -p "${TARGET_DIR}/whisper"
-cp build/bin/Release/whisper*.exe "${TARGET_DIR}/whisper/"
+mkdir -p "${TARGET_DIR}/whisper/bin32"
+cp build/bin/Release/whisper*.exe "${TARGET_DIR}/whisper/bin32"
 
 # -------------------------------------------------
 # DOWNLOAD WHISPER MODEL
@@ -92,10 +92,10 @@ cp build/bin/Release/whisper*.exe "${TARGET_DIR}/whisper/"
 echo "[5/6] Downloading Whisper model..."
 # copy binaries
 mkdir -p "${TARGET_DIR}/whisper/bin32"
-cp build/bin/Release/whisper*.exe "${TARGET_DIR}/whisper/"
+cp build/bin/Release/** "${TARGET_DIR}/whisper/bin32"
 
 MODEL_PATH="${TARGET_DIR}/whisper/models/${MODEL_NAME}"
-
+q
 if [ ! -f "${MODEL_PATH}" ]; then
   curl -L "${MODEL_URL}" -o "${MODEL_PATH}"
 else
@@ -130,3 +130,7 @@ echo "   ├─ whisper/"
 echo "   │   ├─ whisper.exe"
 echo "   │   └─ models/${MODEL_NAME}"
 echo "   └─ piper/"
+
+
+pnpm install
+pnpm build:win

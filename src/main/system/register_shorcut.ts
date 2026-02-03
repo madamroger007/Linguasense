@@ -3,7 +3,7 @@ import { BrowserWindow, globalShortcut } from "electron";
 export function registerSystemShortcuts(win: BrowserWindow) {
   const shortcuts = [
     {
-      key: 'CommandOrControl+Shift+S',
+      key: 'CommandOrControl+Alt+Shift+S',
       channel: 'system:toggle-speech',
     }
   ];

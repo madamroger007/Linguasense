@@ -6,7 +6,12 @@ import { speakingPrompt } from '../../shared/model/prompts/speaking';
 
 let abortController: AbortController | null = null;
 ipcMain.handle('ai:speak', async (_, payload) => {
-  return await speakWithAI(payload, speakingPrompt(payload.request.language));
+  try {
+    return await speakWithAI(payload, speakingPrompt(payload.request.language));
+  } catch (err) {
+    console.error('ai:speak failed', err);
+    throw err;
+  }
 });
 
 ipcMain.handle('ai:tts', async (_, text: string) => {
@@ -33,6 +38,8 @@ ipcMain.handle('ai:tts', async (_, text: string) => {
       mime: 'audio/wav',
     };
   } catch (err) {
+    console.error('ai:tts failed', err);
+
     if (signal.aborted) {
       return null;
     }

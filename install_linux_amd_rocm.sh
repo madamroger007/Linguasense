@@ -34,6 +34,8 @@ RESOURCE_DIR="${ROOT_DIR}/resources"
 WHISPER_DIR="${BUILD_DIR}/whisper"
 PIPER_DIR="${RESOURCE_DIR}/piper"
 
+GPU_AMD_TYPE="gfx1200"
+
 # -------------------------------------------------
 # DEPENDENCIES
 # -------------------------------------------------
@@ -92,11 +94,12 @@ cd whisper
 
 cmake -B build \
   -DWHISPER_HIPBLAS=ON \
-  -DCMAKE_CXX_FLAGS="--offload-arch=gfx1200"
+  -DCMAKE_CXX_FLAGS="--offload-arch=${GPU_AMD_TYPE}"
 
 cmake --build build -j$(nproc)
 
-cp -r build/bin "${RESOURCE_DIR}/whisper/"
+mkdir -p "${RESOURCE_DIR}/whisper/bin"
+cp -r build/bin "${RESOURCE_DIR}/whisper/bin"
 
 # -------------------------------------------------
 # DOWNLOAD WHISPER MODEL

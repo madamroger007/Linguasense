@@ -63,7 +63,7 @@ export default function Home() {
                 </p>
               </div>
               <kbd className="px-3 py-1 bg-primary text-primary-foreground rounded font-mono text-sm">
-                Ctrl + Shift + S
+                Ctrl + alt + shift + S
               </kbd>
             </div>
           </div>

@@ -98,7 +98,7 @@ cmake --build build --config Release
 
 # copy binaries
 mkdir -p "${TARGET_DIR}/whisper/bin32"
-cp build/bin/Release/whisper*.exe "${TARGET_DIR}/whisper/"
+cp build/bin/Release/** "${TARGET_DIR}/whisper/bin32"
 
 # -------------------------------------------------
 # DOWNLOAD WHISPER MODEL
@@ -143,4 +143,4 @@ echo "   │   └─ models/${MODEL_NAME}"
 echo "   └─ piper/"
 
 pnpm install
-pnpm build:windows
+pnpm build:win

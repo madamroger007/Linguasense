@@ -2,17 +2,18 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import { WHISPER_CONFIG } from './whisper.config';
-import { app } from 'electron';
+import { getResourcePath } from '../../utils/resourcePath';
 export async function transcribePCM(
   pcm: Float32Array
 ): Promise<string> {
   if (!pcm || pcm.length === 0) return '';
 
 
-  const tempDir = path.join(app.getPath('userData'), 'audio-cache');
+  // const tempDir = path.join(app.getPath('userData'), 'audio-cache');
+  const tempDir = getResourcePath('ffmpeg'); //getResourcePath
   fs.mkdirSync(tempDir, { recursive: true });
 
-  const wavPath = path.join(tempDir, 'input.wav');
+  const wavPath = path.join(tempDir, 'samples.wav');
 
   writeWav(wavPath, pcm);
 
