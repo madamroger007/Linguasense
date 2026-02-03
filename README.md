@@ -1,5 +1,5 @@
 <p align="center" style="margin: 50px">
-  <img src="build/icon.ico" alt="LinguaSense Logo" width="200"/>
+  <img src="build/win/icon.ico" alt="LinguaSense Logo" width="200"/>
 </p>
 
 # 🌐 LinguaSense
