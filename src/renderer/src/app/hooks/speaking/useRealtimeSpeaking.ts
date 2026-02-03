@@ -79,7 +79,7 @@ export function useRealtimeSpeaking() {
       if (!spokenText || !system.speechActive || cancelledRef.current) return;
 
       dispatch({ type: 'PROCESSING' });
-
+      dispatch({ type: 'SET_LOADING', value: true });
       try {
         dispatch({
           type: 'MESSAGES',
@@ -118,6 +118,8 @@ export function useRealtimeSpeaking() {
       } catch (err) {
         const appError = mapError(err);
         setGlobalError(appError);
+      } finally {
+        dispatch({ type: 'SET_LOADING', value: false });
       }
     },
     [
