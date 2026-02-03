@@ -18,8 +18,8 @@ function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
-    show: true,
-    autoHideMenuBar: false,
+    show: false,
+    autoHideMenuBar: true,
     icon: icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.mjs'), // sesuai output build kamu
