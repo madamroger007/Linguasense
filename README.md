@@ -83,7 +83,7 @@ Required for development or advanced builds:
 4. Extract the Linux build ZIP
 5. Run the executable
 ```
-sudo sh ./install_linux_amd_rocm.sh
+sudo ./install_linux_amd_rocm.sh
 ```
 ---
 
@@ -95,7 +95,7 @@ sudo sh ./install_linux_amd_rocm.sh
 4. Ensure build essentials are installed
 5. Extract the Linux build ZIP and run
 ```
-sudo sh ./install_linux_nvidia_cuda.sh
+sudo ./install_linux_nvidia_cuda.sh
 ```
 ---
 
